@@ -13,6 +13,9 @@ class otter():
 
     def __init__(self):
 
+        print("")
+        self.verbose = True
+
         # Creates instances of the connector and control classes
         self.otter_connector = Connector.otter_connector()
         self.otter_control = Control.otter_control()
@@ -30,19 +33,10 @@ class otter():
         # Variables and lists
         self.geo2ned_from_observer = [0.0, 0.0, 0.0]
 
-
-        # Data for one pontoon
-        self.B_pont = 0.25  # Beam of one pontoon (m)
-        y_pont = 0.395      # Distance from centerline to waterline centroid (m)
+        # Throttle function:
+        # f(x)=-((510823 x^(10))/(12872583281250000))+((523076549 x^(9))/(34326888750000000))-((17722579247 x^(8))/(6865377750000000))+((19356189187 x^(7))/(76281975000000))-((314058915077 x^(6))/(19615365000000))+((1770958235401 x^(5))/(2615382000000))-((640280961202109 x^(4))/(32953813200000))+((102543847233623 x^(3))/(274615110000))-((168412038148411 x^(2))/(36615348000))+((4003025769949 x)/(122051160))-((452798475)/(4403))
 
 
-        # Propeller configuration/input matrix
-        self.l1 = -y_pont  # Lever arm, left propeller (m)
-        self.l2 = y_pont  # Lever arm, right propeller (m)
-        self.k_pos = 0.02216 / 2  # Positive Bollard, one propeller
-        self.k_neg = 0.01289 / 2  # Negative Bollard, one propeller
-        B = self.k_pos * np.array([[1, 1], [-self.l1, -self.l2]])
-        self.Binv = np.linalg.inv(B)
 
 
     # Tries to establish connection to the otter. Default values are in place for testing on a local machine with a test server. Returns boolean
@@ -120,7 +114,7 @@ class otter():
         n, e, d = pm.geodetic2ned(self.sorted_values["lat"], self.sorted_values["lon"], self.sorted_values["height"], self.sorted_values["observer_lat"], self.sorted_values["observer_lon"], self.sorted_values["observer_height"])
         self.geo2ned_from_observer = [n, e, d]
 
-    # Tries to set the Otter in manual control mode, controlling the x, y and torques.
+    # Tries to set the Otter in manual control mode, controlling the x, y and torques. force_y is not in use.
     def set_manual_control_mode(self, force_x, force_y, torque_z):
         if self.check_connection():
             return self.otter_control.set_manual_control_mode(force_x, force_y, torque_z, self.otter_connector)
@@ -129,6 +123,9 @@ class otter():
             "No connection to Otter"
             return False
 
+    # Takes inputs tau_X and tau_N (N) and returns the control speeds n1 and n2 (rad/s)
+    def controlAllocation(self, tau_X, tau_N):
+        return self.otter_control.controlAllocation(tau_X, tau_N)
 
     # Tries to make the Otter enter drift mode. Returns boolean
     def drift(self):
@@ -140,28 +137,17 @@ class otter():
             return False
 
 
-    # Takes inputs tau_x and tau_y and returns the control forces n1 and n2
-    def controlAllocation(self, tau_X, tau_N):
-        """
-        [n1, n2] = controlAllocation(tau_X, tau_N)
-        """
-        tau = np.array([tau_X, tau_N])  # tau = B * u_alloc
-        u_alloc = np.matmul(self.Binv, tau)  # u_alloc = inv(B) * tau
-
-        # u_alloc = abs(n) * n --> n = sign(u_alloc) * sqrt(u_alloc)
-        n1 = np.sign(u_alloc[0]) * math.sqrt(abs(u_alloc[0]))
-        n2 = np.sign(u_alloc[1]) * math.sqrt(abs(u_alloc[1]))
-
-        return n1, n2
-
-
     # Tries to set the trusters manually. a and b are individual thrusters and their values range from -1 to 1
     def set_thrusters(self, a, b):
         return self.otter_control.set_thrusters(a, b, self.otter_connector)
 
 
-
-
+    # Takes inputs form signals in the form of tau_X (surge) and tau_N (yaw) in N, converts it using control allocation
+    # and turns the engines the desired speeds.
+    def controller_inputs_torque(self, tau_X, tau_N):
+        n1, n2 = self.controlAllocation(tau_X, tau_N)
+        throttle_left, throttle_right = self.otter_control.radS_to_throttle(n1, n2)
+        return self.set_thrusters(throttle_left, throttle_right)
 
 
 
@@ -173,16 +159,24 @@ if __name__ == "__main__":
 
 
     # Establishes a socket connection to the Otter with IP and the PORT'
-#    otter.establish_connection("10.0.5.1", 2009)
+    otter.establish_connection("10.0.5.1", 2009)
 
 
     # Write test commands under here:
 
-#    otter.set_manual_control_mode(0.2, 0, 0.0)
-#    otter.update_values()
+    otter.set_manual_control_mode(0.60, 0, 0)
+  #  otter.update_values()
 
-#    time.sleep(5)
+  #  time.sleep(5)
 #    otter.close_connection()
+
+  #  otter.set_thrusters(0.3, 1)
+  
+   # otter.controller_inputs_torque(150, 0)
+
+
+
+
 
 
 
