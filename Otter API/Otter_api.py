@@ -33,9 +33,6 @@ class otter():
         # Variables and lists
         self.geo2ned_from_observer = [0.0, 0.0, 0.0]
 
-        # Throttle function:
-        # f(x)=-((510823 x^(10))/(12872583281250000))+((523076549 x^(9))/(34326888750000000))-((17722579247 x^(8))/(6865377750000000))+((19356189187 x^(7))/(76281975000000))-((314058915077 x^(6))/(19615365000000))+((1770958235401 x^(5))/(2615382000000))-((640280961202109 x^(4))/(32953813200000))+((102543847233623 x^(3))/(274615110000))-((168412038148411 x^(2))/(36615348000))+((4003025769949 x)/(122051160))-((452798475)/(4403))
-
 
 
 
@@ -146,7 +143,11 @@ class otter():
     # and turns the engines the desired speeds.
     def controller_inputs_torque(self, tau_X, tau_N):
         n1, n2 = self.controlAllocation(tau_X, tau_N)
-        throttle_left, throttle_right = self.otter_control.radS_to_throttle(n1, n2)
+
+        # Use interpolating throttle map or linear throttle map
+    #    throttle_left, throttle_right = self.otter_control.radS_to_throttle(n1, n2)
+        throttle_left, throttle_right = self.otter_control.rpm_to_throttle(n1, n2)
+
         return self.set_thrusters(throttle_left, throttle_right)
 
 
@@ -164,7 +165,7 @@ if __name__ == "__main__":
 
     # Write test commands under here:
 
-    otter.set_manual_control_mode(0.60, 0, 0)
+  #  otter.set_manual_control_mode(1, 0, 0)
   #  otter.update_values()
 
   #  time.sleep(5)
@@ -172,7 +173,7 @@ if __name__ == "__main__":
 
   #  otter.set_thrusters(0.3, 1)
   
-   # otter.controller_inputs_torque(150, 0)
+    otter.controller_inputs_torque(150, 0)
 
 
 

@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import round, pi
 import math
+from scipy.interpolate import CubicSpline
 
 
 
@@ -42,6 +43,15 @@ class otter_control():
         # Assuming linear throttle
         self.radS_per_percent = self.radS_spectrum / 100
 
+        # Throttle values for the thruster
+        rpm_values = [0, 68, 85, 140, 200, 270, 340, 440, 640, 920, 1108]
+        throttle_values = [15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60]
+        self.rpm_to_throttle_spline = CubicSpline(rpm_values, throttle_values, extrapolate=False)
+
+
+        self.n1_neg = False
+        self.n2_neg = False
+
 
 
     # Sets the Otter in drift mode with zero trust
@@ -58,6 +68,9 @@ class otter_control():
         if self.verbose:
             print("Otter entering manual control mode with X force:", force_x, "Y force:", force_y, "Z torque:", torque_z)
 
+        """
+        uncomment if not using interpolating throttle map
+        
         # Scaling for the values since 0 rpm is a field of values (not only x=0)
         if force_x > 0:
             force_x = (force_x * self.scale_x_pos) + 0.18
@@ -71,7 +84,7 @@ class otter_control():
         elif torque_z < -0.05:
             torque_z = (torque_z * self.scale_z_neg) - 0.05
         else:
-            torque_z = 0.0
+            torque_z = 0.0"""
 
 
         force_x = str(force_x)
@@ -123,6 +136,28 @@ class otter_control():
 
         return n1, n2
 
+
+    # Gives a percentage throttle from the rad/s value in n1 and n2 using interpolation
+    def rpm_to_throttle(self, n1, n2):
+        if n1 < 0:
+            self.n1_neg = True
+        if n2 < 0:
+            self.n2_neg = True
+
+        n1_rpm = abs(n1) / ((2*pi) / 60)
+        n2_rpm = abs(n2) / ((2*pi) / 60)
+
+        n1_throttle = self.rpm_to_throttle_spline(n1_rpm) / 100
+        n2_throttle = self.rpm_to_throttle_spline(n2_rpm) / 100
+
+        if self.n1_neg:
+            n1_throttle = n1_throttle * -1
+        if self.n2_neg:
+            n2_throttle = n2_throttle * -1
+
+        return n1_throttle, n2_throttle
+
+    # Gives throttle using a linear throttle percentage
     def radS_to_throttle(self, n1, n2):
         throttle_left = n1 / self.radS_per_percent
         throttle_right = n2 / self.radS_per_percent
@@ -131,7 +166,6 @@ class otter_control():
         throttle_right = throttle_right / 100
 
         return throttle_left, throttle_right
-
 
 
     # Applies emergency brakes using reverse trusting until the speed of the Otter is below zero
