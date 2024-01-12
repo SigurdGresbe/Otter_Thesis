@@ -145,8 +145,8 @@ class otter():
         n1, n2 = self.controlAllocation(tau_X, tau_N)
 
         # Use interpolating throttle map or linear throttle map
-    #    throttle_left, throttle_right = self.otter_control.radS_to_throttle(n1, n2)
-        throttle_left, throttle_right = self.otter_control.rpm_to_throttle(n1, n2)
+    #    throttle_left, throttle_right = self.otter_control.radS_to_throttle_linear(n1, n2)
+        throttle_left, throttle_right = self.otter_control.radS_to_throttle_interpolation(n1, n2)
 
         return self.set_thrusters(throttle_left, throttle_right)
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
 
     # Establishes a socket connection to the Otter with IP and the PORT'
-    otter.establish_connection("10.0.5.1", 2009)
+    otter.establish_connection("localhost", 2009)
 
 
     # Write test commands under here:

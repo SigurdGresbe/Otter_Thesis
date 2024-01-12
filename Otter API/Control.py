@@ -138,7 +138,7 @@ class otter_control():
 
 
     # Gives a percentage throttle from the rad/s value in n1 and n2 using interpolation
-    def rpm_to_throttle(self, n1, n2):
+    def radS_to_throttle_interpolation(self, n1, n2):
         if n1 < 0:
             self.n1_neg = True
         if n2 < 0:
@@ -158,7 +158,7 @@ class otter_control():
         return n1_throttle, n2_throttle
 
     # Gives throttle using a linear throttle percentage
-    def radS_to_throttle(self, n1, n2):
+    def radS_to_throttle_linear(self, n1, n2):
         throttle_left = n1 / self.radS_per_percent
         throttle_right = n2 / self.radS_per_percent
 
