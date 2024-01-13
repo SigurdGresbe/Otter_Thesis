@@ -74,6 +74,7 @@ if __name__ == "__main__":
         ls[1].append(otter.otter_control.F_z)
 
         time.sleep(0)
-
+        
+    # Dette er kun for debuging for å se verdier
     ls = np.array(ls)
     print("ok")
