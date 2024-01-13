@@ -49,6 +49,11 @@ class otter_control():
         self.rpm_to_throttle_spline = CubicSpline(rpm_values, throttle_values, extrapolate=False)
 
 
+        # Max values for movement
+        self.max_surge_N = 200
+        self.max_yaw_N = 115
+
+
         self.n1_neg = False
         self.n2_neg = False
 
@@ -113,20 +118,30 @@ class otter_control():
         alpha_b = pi/2 - np.arctan2(l_x, -l_y)
         c_x = 1/(np.cos(alpha_a)+np.cos(alpha_b))
 
-        F_x = c_x * (a * np.cos(alpha_a) + b * np.cos(alpha_b))
+        self.F_x = c_x * (a * np.cos(alpha_a) + b * np.cos(alpha_b))
 
         # Calculate rotational force
         beta_a = pi/2 - alpha_a
         beta_b = pi/2 - alpha_b
         c_t = 1/(np.cos(beta_a)-np.cos(beta_b))
 
-        F_z = c_t * (a * np.cos(beta_a) + b * (np.cos(beta_b)))
+        self.F_z = c_t * (a * np.cos(beta_a) + b * (np.cos(beta_b)))
 
-        return self.set_manual_control_mode(F_x, 0.0, F_z, otter_connector)
+        return self.set_manual_control_mode(self.F_x, 0.0, self.F_z, otter_connector)
 
 
     # Takes inputs tau_X and tau_Y (N) and returns the control speeds n1 and n2 (rad/s)
     def controlAllocation(self, tau_X, tau_N):
+
+
+        # Checks if tau_x or tau_n is over the max N set
+        if tau_X > self.max_surge_N:
+            tau_X = self.max_surge_N
+
+        if tau_N > self.max_yaw_N:
+            tau_N = self.max_yaw_N
+
+
         tau = np.array([tau_X, tau_N])  # tau = B * u_alloc
         u_alloc = np.matmul(self.Binv, tau)  # u_alloc = inv(B) * tau
 
@@ -144,8 +159,15 @@ class otter_control():
         if n2 < 0:
             self.n2_neg = True
 
+
         n1_rpm = abs(n1) / ((2*pi) / 60)
         n2_rpm = abs(n2) / ((2*pi) / 60)
+
+        if n1_rpm > self.max_rpm:
+            n1_rpm = self.max_rpm
+
+        if n2_rpm > self.max_rpm:
+            n2_rpm = self.max_rpm
 
         n1_throttle = self.rpm_to_throttle_spline(n1_rpm) / 100
         n2_throttle = self.rpm_to_throttle_spline(n2_rpm) / 100
@@ -154,6 +176,9 @@ class otter_control():
             n1_throttle = n1_throttle * -1
         if self.n2_neg:
             n2_throttle = n2_throttle * -1
+
+    #    n1_throttle = np.round(n1_throttle, 2)
+    #    n2_throttle = np.round(n2_throttle, 2)
 
         return n1_throttle, n2_throttle
 
