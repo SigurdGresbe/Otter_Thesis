@@ -5,12 +5,14 @@ from lib.plotTimeSeries import *
 
 
 # Simulation options
-N = 20000                  # Number of simulation samples
+N = 100000                  # Number of simulation samples
 sampleTime = 0.02           # Simulation time
 
 use_target_coordinates = True           # To use coordinates as a target or to use a linear path
-target_coordinates = [100, 50]          # Coordinates of target
-surge_target_radius = 5                      # Radius of the target
+
+target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -500], [-500, 500], [0, 0]]          # Coordinates of target
+
+surge_target_radius = 5                      # Radius of the target or the distance from the target that counts as target reached
 always_face_target = False              # Does the Otter have to face directly at the center of the target when inside the target radius (causes instabillity when reaching the target)
 #TODO Lag noe bedre greier enn dette (always face target), funker sånn halvveis
 
@@ -18,7 +20,7 @@ always_face_target = False              # Does the Otter have to face directly a
 
 # Creates Otter object
 otter = Otter_api.otter()
-simulator = Otter_simulator.otter_simulator(target_coordinates, use_target_coordinates, surge_target_radius, always_face_target)
+simulator = Otter_simulator.otter_simulator(target_list, use_target_coordinates, surge_target_radius, always_face_target)
 
 
 # Some values needed for the plotting
@@ -35,9 +37,9 @@ browser = 'chrome'                  # browser for visualization of animated GIF
 
 # Creating two controller objects for surge and yaw
 #TODO Må tunes!!!
-surge_kp = 1
-surge_ki = 0
-surge_kd = 0
+surge_kp = 8
+surge_ki = 2
+surge_kd = 5
 yaw_kp = 1
 yaw_ki = 0
 yaw_kd = 0
@@ -64,7 +66,7 @@ except:
     option = 1
 
 
-
+print(len(target_list))
 
 # Main:
 def main(option):

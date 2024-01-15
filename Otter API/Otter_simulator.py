@@ -5,12 +5,12 @@ import time
 
 class otter_simulator():
 
-    def __init__(self, target_coordinates, use_target_coordinates, surge_target_radius, always_face_target):
+    def __init__(self, target_list, use_target_coordinates, surge_target_radius, always_face_target):
 
         # Options:
         self.use_target_coordinates = use_target_coordinates
 
-        self.target_coordinates = target_coordinates     # Position of target in (m) from Otter.
+        self.target_list = target_list     # Position of target in (m) from Otter.
         self.surge_setpoint = surge_target_radius  # Distance to aim for from target, usually 0
 
 
@@ -175,6 +175,12 @@ class otter_simulator():
         self.taun_list = []
 
 
+        # Sets the first target from the target list
+        self.target_counter = 0
+        self.target_coordinates = self.target_list[self.target_counter]
+
+
+
         for i in range(0, N + 1):
 
             t = i * sampleTime
@@ -184,6 +190,12 @@ class otter_simulator():
                 north_distance = self.target_coordinates[0] - eta[0]
                 east_distance = self.target_coordinates[1] - eta[1]
                 self.distance_to_target = math.sqrt(north_distance**2 + east_distance**2)
+
+                # Goes to the next target when the target is reached
+                if self.distance_to_target < self.surge_setpoint and (self.target_counter + 1) < len(self.target_list):
+                    self.target_counter = self.target_counter + 1
+                    self.target_coordinates = self.target_list[self.target_counter]
+
 
                 # Calculates the angle to the target in degrees. If this must be changed to radians, remember to change the controller aswell as this is set up for degrees!
                 test = math.atan(east_distance/north_distance) - (math.pi / 2)
