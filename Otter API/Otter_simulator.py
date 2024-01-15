@@ -172,7 +172,7 @@ class otter_simulator():
 
         # Initialization of table used to store the simulation data
         simData = np.empty([0, 2 * DOF + 2 * self.dimU], float)
-        self.taun_list = []
+
 
 
         # Sets the first target from the target list
@@ -214,7 +214,7 @@ class otter_simulator():
                     tau_N = 0
 
 
-            self.taun_list.append(tau_N)
+
 
            # tau_X = 0
            # tau_N = 0
@@ -243,7 +243,7 @@ class otter_simulator():
                 print("")
 
 
-        self.taun_list = np.array(self.taun_list)
+
         simTime = np.arange(start=0, stop=t+sampleTime, step=sampleTime)[:, None]
 
         return (simTime, simData)
