@@ -167,8 +167,8 @@ class otter_simulator():
 
         # Initial state vectors
         eta = np.array([0, 0, 0, 0, 0, 0], float)    # position/attitude, user editable, eta[0] = north, eta[1] = east, eta[5] = yaw angle
-        nu = self.nu                              # velocity, defined by vehicle class
-        u_actual = self.u_actual                  # actual inputs, defined by vehicle class
+        nu = self.nu                              # velocity
+        u_actual = self.u_actual                  # actual inputs
 
         # Initialization of table used to store the simulation data
         simData = np.empty([0, 2 * DOF + 2 * self.dimU], float)
