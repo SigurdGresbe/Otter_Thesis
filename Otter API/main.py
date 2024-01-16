@@ -5,14 +5,15 @@ from lib.plotTimeSeries import *
 
 
 # Simulation options
-N = 100000                  # Number of simulation samples
+N = 75000                  # Number of simulation samples
 sampleTime = 0.02           # Simulation time
 
 use_target_coordinates = True           # To use coordinates as a target or to use a linear path
 
-target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -500], [-500, 500], [0, 0]]          # Coordinates of target
+#target_list = [[-20, 0], [-30, 10], [-20, 20], [-10, 10], [-10, 60], [0, 70], [10, 60], [10, 10], [20, 20], [30, 10], [20, 0], [0, 0]] # Coordinates of target
+target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]
 
-surge_target_radius = 5                      # Radius of the target or the distance from the target that counts as target reached
+surge_target_radius = 1                     # Radius of the target or the distance from the target that counts as target reached
 always_face_target = False              # Does the Otter have to face directly at the center of the target when inside the target radius (causes instabillity when reaching the target)
 #TODO Lag noe bedre greier enn dette (always face target), funker sånn halvveis
 
@@ -37,10 +38,10 @@ browser = 'chrome'                  # browser for visualization of animated GIF
 
 # Creating two controller objects for surge and yaw
 #TODO Må tunes!!!
-surge_kp = 8
-surge_ki = 2
-surge_kd = 5
-yaw_kp = 1
+surge_kp = 30
+surge_ki = 0
+surge_kd = 0
+yaw_kp = 0.5
 yaw_ki = 0
 yaw_kd = 0
 
@@ -77,10 +78,9 @@ def main(option):
         plotVehicleStates(simTime, simData, 1)
         plotControls(simTime, simData, otter, 2)
         plot3D(simData, numDataPoints, FPS, filename, 3)
+        # Saves a GIF for 3d animation in the same folder as main
 
-        """ Ucomment the line below for 3D animation in the web browswer. 
-        Alternatively, open the animated GIF file manually in your preferred browser. """
-        # webbrowser.get(browser).open_new_tab('file://' + os.path.abspath(filename))
+
 
         plt.show()
         plt.close()

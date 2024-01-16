@@ -12,6 +12,7 @@ class otter_simulator():
 
         self.target_list = target_list     # Position of target in (m) from Otter.
         self.surge_setpoint = surge_target_radius  # Distance to aim for from target, usually 0
+        self.last_target = target_list[-1]
 
 
         self.V_c = 0.0      # Starting speed (m/s)
@@ -180,9 +181,10 @@ class otter_simulator():
         self.target_coordinates = self.target_list[self.target_counter]
 
 
+        # Main simulation loop
+        i = 0
 
-        for i in range(0, N + 1):
-
+        while i < (N + 1):
             t = i * sampleTime
 
             if self.use_target_coordinates:
@@ -195,6 +197,15 @@ class otter_simulator():
                 if self.distance_to_target < self.surge_setpoint and (self.target_counter + 1) < len(self.target_list):
                     self.target_counter = self.target_counter + 1
                     self.target_coordinates = self.target_list[self.target_counter]
+                    north_distance = self.target_coordinates[0] - eta[0]
+                    east_distance = self.target_coordinates[1] - eta[1]
+                    self.distance_to_target = math.sqrt(north_distance**2 + east_distance**2)
+
+
+                # Ends the simulation when the final target is reached
+                if self.target_coordinates == self.last_target:
+                    if self.distance_to_target < self.surge_setpoint:
+                        i = N
 
 
                 # Calculates the angle to the target in degrees. If this must be changed to radians, remember to change the controller aswell as this is set up for degrees!
@@ -216,7 +227,7 @@ class otter_simulator():
 
 
 
-           # tau_X = 0
+           # tau_X = 100
            # tau_N = 0
 
 
@@ -237,10 +248,10 @@ class otter_simulator():
 
             # Counts and prints the current number of simulation
             counter = counter +1
-            print(f"Running #{counter}")
-
             if counter % 100 == 0:
-                print("")
+                print(f"Running #{counter}")
+
+            i = i + 1
 
 
 
