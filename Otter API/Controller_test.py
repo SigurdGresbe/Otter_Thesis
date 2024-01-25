@@ -20,6 +20,13 @@ class PIDController:
         error = setpoint - measured_value
 
         self.integral += error * sample_time
+
+        # Caps the integral
+        if self.integral > 25:
+            self.integral = 25
+        if self.integral < -25:
+            self.integral = -25
+
         derivative = (error - self.previous_error) / sample_time if sample_time > 0 else 0
         self.previous_error = error
 
@@ -34,6 +41,13 @@ class PIDController:
 
         error = (setpoint - measured_value + 180) % 360 - 180
         self.integral += error * sample_time
+
+        # Caps the integral
+        if self.integral > 25:
+            self.integral = 25
+        if self.integral < -25:
+            self.integral = -25
+
         derivative = -(error - self.previous_error)
         self.previous_error = error
 

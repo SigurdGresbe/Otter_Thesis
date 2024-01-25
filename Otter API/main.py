@@ -5,7 +5,7 @@ from lib.plotTimeSeries import *
 
 
 # Simulation options
-N = 25000                  # Number of simulation samples
+N = 50000                  # Number of simulation samples
 sampleTime = 0.02           # Simulation time
 
 # Targeting
@@ -14,9 +14,9 @@ use_moving_target = True               # To use moving target instead of target 
 
 #target_list = [[-20, 0], [-30, 10], [-20, 20], [-10, 10], [-10, 60], [0, 70], [10, 60], [10, 10], [20, 20], [30, 10], [20, 0], [0, 0]] # Coordinates of target
 target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]
-moving_target_start = [400, 400]
 
-moving_target_increase = [-0.25, 0.15]       # Movement of the moving target each second
+moving_target_start = [40, 50]
+moving_target_increase = [-0.25, 0.2]       # Movement of the moving target each second
 
 
 surge_target_radius = 0.1                     # Radius of the target or the distance from the target that counts as target reached
@@ -44,12 +44,12 @@ browser = 'chrome'                  # browser for visualization of animated GIF
 
 # Creating two controller objects for surge and yaw
 #TODO Må tunes!!!
-surge_kp = 50
-surge_ki = 7
-surge_kd = 10
-yaw_kp = 12
-yaw_ki = 5
-yaw_kd = 5
+surge_kp = 86
+surge_ki = 12
+surge_kd = 81
+yaw_kp = 108
+yaw_ki = 15
+yaw_kd = 68
 
 surge_PID = Controller_test.PIDController(surge_kp, surge_ki, surge_kd)
 yaw_PID = Controller_test.PIDController(yaw_kp, yaw_ki, yaw_kd)

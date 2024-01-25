@@ -237,9 +237,9 @@ class otter_simulator():
                 self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
 
                 # Increases the target values every second
-               # if counter % (1/sampleTime) == 0:
-                self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]*sampleTime
-                self.moving_target[1] = self.moving_target[1] + self.moving_target_increase[1]*sampleTime
+                if counter % (1/sampleTime) == 0:
+                    self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]
+                    self.moving_target[1] = self.moving_target[1] + self.moving_target_increase[1]
 
 
             # Get forces for surge and yaw
