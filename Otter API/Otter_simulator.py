@@ -5,11 +5,14 @@ import time
 
 class otter_simulator():
 
-    def __init__(self, target_list, use_target_coordinates, surge_target_radius, always_face_target):
+    def __init__(self, target_list, use_target_coordinates, surge_target_radius, always_face_target, use_moving_target, moving_target_start, moving_target_increase):
 
         # Options:
         self.use_target_coordinates = use_target_coordinates
+        self.use_moving_target = use_moving_target
+        self.moving_target_increase = moving_target_increase
 
+        self.moving_target_start = moving_target_start
         self.target_list = target_list     # Position of target in (m) from Otter.
         self.surge_setpoint = surge_target_radius  # Distance to aim for from target, usually 0
         self.last_target = target_list[-1]
@@ -207,11 +210,26 @@ class otter_simulator():
                     if self.distance_to_target < self.surge_setpoint:
                         i = N
 
-
                 # Calculates the angle to the target in degrees. If this must be changed to radians, remember to change the controller aswell as this is set up for degrees!
-                test = math.atan(east_distance/north_distance) - (math.pi / 2)
+
                 self.yaw_setpoint = math.atan2(east_distance, north_distance)
                 self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
+
+            if self.use_moving_target:
+                # Calculate distance to target:
+                north_distance = self.moving_target_start[0] - eta[0]
+                east_distance = self.moving_target_start[1] - eta[1]
+
+                self.distance_to_target = math.sqrt(north_distance**2 + east_distance**2)
+
+                if self.distance_to_target < self.surge_setpoint:
+                    north_distance = 0
+                    east_distance = 0
+                    self.distance_to_target = 0
+
+                self.yaw_setpoint = math.atan2(east_distance, north_distance)
+                self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
+
 
 
 

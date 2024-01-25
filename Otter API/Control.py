@@ -208,3 +208,7 @@ class otter_control():
 
         # Enters drift mode when the speed is zero or lower.
         self.drift()
+
+
+if __name__ == "__main__":
+    otter = otter_control()
