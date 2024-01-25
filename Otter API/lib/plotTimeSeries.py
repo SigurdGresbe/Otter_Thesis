@@ -226,5 +226,22 @@ def plot3D(simData,numDataPoints,FPS,filename,figNo):
                          repeat=True)
     
     # Save the 3D animation as a gif file
-    ani.save(filename, writer=animation.PillowWriter(fps=FPS))  
+    ani.save(filename, writer=animation.PillowWriter(fps=FPS))
+
+def plotPosTar(simTime, simData, figNo, targetData):
+    x = simData[:, 0]
+    y = simData[:, 1]
+
+    targetData = targetData[:-1]
+    tar_x = targetData[:, 1]
+    tar_y = targetData[:, 0]
+
+    plt.figure(
+        figNo, figsize=(cm2inch(figSize1[0]), cm2inch(figSize1[1])), dpi=dpiValue
+    )
+    plt.grid()
+
+    plt.plot(y, x, tar_x, tar_y, "--")
+    plt.legend(["North-East positions (m)", "Target position (m)"], fontsize=legendSize)
+    plt.grid()
 

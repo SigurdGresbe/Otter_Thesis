@@ -5,7 +5,7 @@ from lib.plotTimeSeries import *
 
 
 # Simulation options
-N = 15000                  # Number of simulation samples
+N = 25000                  # Number of simulation samples
 sampleTime = 0.02           # Simulation time
 
 # Targeting
@@ -16,11 +16,11 @@ use_moving_target = True               # To use moving target instead of target 
 target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]
 moving_target_start = [400, 400]
 
-moving_target_increase = [1, 0.5]       # Movement of the moving target each second
+moving_target_increase = [-0.25, 0.15]       # Movement of the moving target each second
 
 
-surge_target_radius = 3                     # Radius of the target or the distance from the target that counts as target reached
-always_face_target = False              # Does the Otter have to face directly at the center of the target when inside the target radius (causes instabillity when reaching the target)
+surge_target_radius = 0.1                     # Radius of the target or the distance from the target that counts as target reached
+always_face_target = True              # Does the Otter have to face directly at the center of the target when inside the target radius (causes instabillity when reaching the target)
 #TODO Lag noe bedre greier enn dette (always face target), funker sånn halvveis
 
 
@@ -44,12 +44,12 @@ browser = 'chrome'                  # browser for visualization of animated GIF
 
 # Creating two controller objects for surge and yaw
 #TODO Må tunes!!!
-surge_kp = 8
-surge_ki = 5
+surge_kp = 50
+surge_ki = 7
 surge_kd = 10
-yaw_kp = 1
-yaw_ki = 0
-yaw_kd = 0
+yaw_kp = 12
+yaw_ki = 5
+yaw_kd = 5
 
 surge_PID = Controller_test.PIDController(surge_kp, surge_ki, surge_kd)
 yaw_PID = Controller_test.PIDController(yaw_kp, yaw_ki, yaw_kd)
@@ -79,11 +79,12 @@ print(len(target_list))
 def main(option):
 
     if option == 1:
-        [simTime, simData] = simulator.simulate(N, sampleTime, otter, surge_PID, yaw_PID)
+        [simTime, simData, targetData] = simulator.simulate(N, sampleTime, otter, surge_PID, yaw_PID)
 
         plotVehicleStates(simTime, simData, 1)
         plotControls(simTime, simData, otter, 2)
         plot3D(simData, numDataPoints, FPS, filename, 3)
+        plotPosTar(simTime, simData, 4, targetData)
         # Saves a GIF for 3d animation in the same folder as main
 
 

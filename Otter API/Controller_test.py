@@ -18,6 +18,7 @@ class PIDController:
         self.previous_time = current_time
 
         error = setpoint - measured_value
+
         self.integral += error * sample_time
         derivative = (error - self.previous_error) / sample_time if sample_time > 0 else 0
         self.previous_error = error
@@ -30,7 +31,6 @@ class PIDController:
         current_time = time.time()
         sample_time = current_time - self.previous_time
         self.previous_time = current_time
-
 
         error = (setpoint - measured_value + 180) % 360 - 180
         self.integral += error * sample_time
