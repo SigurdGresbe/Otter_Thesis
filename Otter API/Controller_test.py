@@ -11,7 +11,19 @@ class PIDController:
         self.previous_error = 0
         self.integral = 0
         self.previous_time = time.time()
+"""
+    # Calculate angles to use for error in X and Y axis
+    def angle_calculator():
+            if sample % 300 = 0
+                Xpos_new = Xpos_old
+                Xpos_now = Xpos_new
+                Ypos_new = Ypos_old
+                Ypos_now = Ypos_new
+                Xd = Xpos_new - Xpos_old
+                Yd = Ypos_new - Xpos_old
 
+                angle = math.atan2(Yd/Xd)
+"""
     def calculate_surge(self, setpoint, measured_value):
         current_time = time.time()
         sample_time = current_time - self.previous_time
