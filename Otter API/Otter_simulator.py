@@ -5,7 +5,7 @@ import time
 
 class otter_simulator():
 
-    def __init__(self, target_list, use_target_coordinates, surge_target_radius, always_face_target, use_moving_target, moving_target_start, moving_target_increase):
+    def __init__(self, target_list, use_target_coordinates, surge_target_radius, always_face_target, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached):
 
         # Options:
         self.use_target_coordinates = use_target_coordinates
@@ -16,6 +16,7 @@ class otter_simulator():
         self.target_list = target_list     # Position of target in (m) from Otter.
         self.surge_setpoint = surge_target_radius  # Distance to aim for from target, usually 0
         self.last_target = target_list[-1]
+        self.end_when_last_target_reached = end_when_last_target_reached
 
 
         self.V_c = 0.0      # Starting speed (m/s)
@@ -210,14 +211,15 @@ class otter_simulator():
 
 
                 # Ends the simulation when the final target is reached
-                if self.target_coordinates == self.last_target:
-                    if self.distance_to_target < self.surge_setpoint:
-                        i = N
+                if self.end_when_last_target_reached:
+                    if self.target_coordinates == self.last_target:
+                        if self.distance_to_target < self.surge_setpoint:
+                            i = N
 
                 # Calculates the angle to the target in degrees. If this must be changed to radians, remember to change the controller aswell as this is set up for degrees!
 
                 self.yaw_setpoint = math.atan2(east_distance, north_distance)
-                self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
+                #self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
 
 
             # Handles the tracking of the moving target
@@ -234,7 +236,7 @@ class otter_simulator():
                     self.distance_to_target = 0
 
                 self.yaw_setpoint = math.atan2(east_distance, north_distance)
-                self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
+                #self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
 
                 # Increases the target values every second
                 if counter % (1/sampleTime) == 0:
@@ -243,8 +245,9 @@ class otter_simulator():
 
 
             # Get forces for surge and yaw
-            angle = eta[5] * (180 / math.pi)
-            tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target)
+            #angle = eta[5] * (180 / math.pi)
+            angle = eta[5]
+            tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle)
             tau_N = yaw_PID.calculate_yaw(self.yaw_setpoint, angle)
 
             if not self.always_face_target:

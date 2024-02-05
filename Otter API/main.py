@@ -5,7 +5,7 @@ from lib.plotTimeSeries import *
 
 
 # Simulation options
-N = 50000                  # Number of simulation samples
+N = 25000                  # Number of simulation samples
 sampleTime = 0.02           # Simulation time
 
 # Targeting
@@ -13,13 +13,16 @@ use_target_coordinates = False           # To use coordinates as a target or to 
 use_moving_target = True               # To use moving target instead of target list (path following)
 
 #target_list = [[-20, 0], [-30, 10], [-20, 20], [-10, 10], [-10, 60], [0, 70], [10, 60], [10, 10], [20, 20], [30, 10], [20, 0], [0, 0]] # Coordinates of target
-target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]
+#target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]
+target_list = [[-1000, 0]]
 
-moving_target_start = [40, 50]
-moving_target_increase = [-0.25, 0.2]       # Movement of the moving target each second
+moving_target_start = [-100, -70]
+moving_target_increase = [-0.15, 0.05]       # Movement of the moving target each second
+
+end_when_last_target_reached = True         # Ends the simulation when the final target is reached
 
 
-surge_target_radius = 0.1                     # Radius of the target or the distance from the target that counts as target reached
+surge_target_radius = 1                     # Radius of the target or the distance from the target that counts as target reached
 always_face_target = True              # Does the Otter have to face directly at the center of the target when inside the target radius (causes instabillity when reaching the target)
 #TODO Lag noe bedre greier enn dette (always face target), funker sånn halvveis
 
@@ -27,7 +30,7 @@ always_face_target = True              # Does the Otter have to face directly at
 
 # Creates Otter object
 otter = Otter_api.otter()
-simulator = Otter_simulator.otter_simulator(target_list, use_target_coordinates, surge_target_radius, always_face_target, use_moving_target, moving_target_start, moving_target_increase)
+simulator = Otter_simulator.otter_simulator(target_list, use_target_coordinates, surge_target_radius, always_face_target, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached)
 
 
 # Some values needed for the plotting

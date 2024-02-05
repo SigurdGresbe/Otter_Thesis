@@ -1,6 +1,7 @@
 import Otter_api
 import time
 import numpy as np
+import math
 
 
 class PIDController:
@@ -12,7 +13,9 @@ class PIDController:
         self.integral = 0
         self.previous_time = time.time()
 
-    def calculate_surge(self, setpoint, measured_value):
+
+
+    def calculate_surge(self, setpoint, measured_value, yaw_setpoint, yaw_measured):
         current_time = time.time()
         sample_time = current_time - self.previous_time
         self.previous_time = current_time
@@ -22,31 +25,35 @@ class PIDController:
         self.integral += error * sample_time
 
         # Caps the integral
-        if self.integral > 25:
-            self.integral = 25
-        if self.integral < -25:
-            self.integral = -25
+        self.integral = max(min(self.integral, 25), -25)
 
         derivative = (error - self.previous_error) / sample_time if sample_time > 0 else 0
         self.previous_error = error
 
+        # Scalar that scales the output down if the yaw error is big
+        yaw_error = (yaw_setpoint - yaw_measured + math.pi) % (2 * math.pi) - math.pi
+        scalar = 1 - abs(yaw_error) / math.pi
 
-        surge_output = -(self.kp * error + self.ki * self.integral + self.kd * derivative)
+
+        # Calculate the PID output
+        surge_output = -(self.kp * error + self.ki * self.integral + self.kd * derivative) * scalar
+
+
         return surge_output
+
 
     def calculate_yaw(self, setpoint, measured_value):
         current_time = time.time()
         sample_time = current_time - self.previous_time
         self.previous_time = current_time
 
-        error = (setpoint - measured_value + 180) % 360 - 180
+        #error = (setpoint - measured_value + 180) % 360 - 180
+        error = (setpoint - measured_value + math.pi) % (2 * math.pi) - math.pi
+
         self.integral += error * sample_time
 
         # Caps the integral
-        if self.integral > 25:
-            self.integral = 25
-        if self.integral < -25:
-            self.integral = -25
+        self.integral = max(min(self.integral, 25), -25)
 
         derivative = -(error - self.previous_error)
         self.previous_error = error
@@ -87,8 +94,6 @@ if __name__ == "__main__":
 
 
         otter.controller_inputs_torque(surge_force, yaw_force)
-
-        # TODO legg til dynamikken så man kan simulere dette realistisk?
 
 
         ls[0].append(otter.otter_control.F_x)
