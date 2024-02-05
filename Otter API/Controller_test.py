@@ -2,7 +2,6 @@ import Otter_api
 import time
 import numpy as np
 
-
 class PIDController:
     def __init__(self, kp, ki, kd):
         self.kp = kp
@@ -10,20 +9,20 @@ class PIDController:
         self.kd = kd
         self.previous_error = 0
         self.integral = 0
+        self.outputA = 0
         self.previous_time = time.time()
-"""
-    # Calculate angles to use for error in X and Y axis
-    def angle_calculator():
-            if sample % 300 = 0
-                Xpos_new = Xpos_old
-                Xpos_now = Xpos_new
-                Ypos_new = Ypos_old
-                Ypos_now = Ypos_new
-                Xd = Xpos_new - Xpos_old
-                Yd = Ypos_new - Xpos_old
 
-                angle = math.atan2(Yd/Xd)
-"""
+    # Not working as intended... yet!... Should make faster or slower responsiveness for sharper or smoother curves 
+    def lowpass_filter(self, dt, inputA):
+        self.outputA
+        f_c = 0.02 # larger value = faster response, lower for smoother curve
+        RC = 1 / (2 * np.pi * f_c)
+        alpha = dt / (RC + dt)
+    
+        self.outputA = alpha * inputA + (1 - alpha) * self.outputA
+
+        return self.outputA
+        
     def calculate_surge(self, setpoint, measured_value):
         current_time = time.time()
         sample_time = current_time - self.previous_time
@@ -39,7 +38,12 @@ class PIDController:
         if self.integral < -25:
             self.integral = -25
 
-        derivative = (error - self.previous_error) / sample_time if sample_time > 0 else 0
+
+
+        
+        raw_derivative = (error - self.previous_error) / sample_time if sample_time > 0 else 0
+        derivative = self.lowpass_filter(sample_time, raw_derivative)
+        
         self.previous_error = error
 
 
@@ -59,9 +63,9 @@ class PIDController:
             self.integral = 25
         if self.integral < -25:
             self.integral = -25
-
-        derivative = -(error - self.previous_error)
-        self.previous_error = error
+        
+        raw_derivative = -(error - self.previous_error)
+        derivative = self.lowpass_filter(sample_time,raw_derivative)
 
 
         yaw_output = (self.kp * error + self.ki * self.integral + self.kd * derivative)

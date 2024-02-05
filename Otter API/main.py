@@ -5,16 +5,17 @@ from lib.plotTimeSeries import *
 
 
 # Simulation options
-N = 50000                  # Number of simulation samples
+N = 5000                  # Number of simulation samples
 sampleTime = 0.02           # Simulation time
 
 # Targeting
-use_target_coordinates = False           # To use coordinates as a target or to use a linear path
-use_moving_target = True               # To use moving target instead of target list (path following)
+use_target_coordinates = 1          # To use coordinates as a target or to use a linear path
+use_moving_target = 0               # To use moving target instead of target list (path following)
 
 #target_list = [[-20, 0], [-30, 10], [-20, 20], [-10, 10], [-10, 60], [0, 70], [10, 60], [10, 10], [20, 20], [30, 10], [20, 0], [0, 0]] # Coordinates of target
-target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]
-
+#target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]
+target_list = [[100, 100]]
+               
 moving_target_start = [40, 50]
 moving_target_increase = [-0.25, 0.2]       # Movement of the moving target each second
 

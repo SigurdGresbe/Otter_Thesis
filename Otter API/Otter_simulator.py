@@ -274,7 +274,8 @@ class otter_simulator():
             # Counts and prints the current number of simulation
             counter = counter +1
             if counter % 100 == 0:
-                print(f"Running #{counter}")
+                #print(f"Running #{counter}")
+                print(f"Running #{(counter/N)*100}%")
 
             newTargetData = [self.moving_target[0], self.moving_target[1]]
             self.targetData = np.vstack([self.targetData, newTargetData])
