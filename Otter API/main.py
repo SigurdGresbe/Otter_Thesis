@@ -9,7 +9,7 @@ from lib.plotTimeSeries import *
 ##########################################################################################################################################################
 
 
-N = 60000                                                                                               # Number of simulation samples
+N = 45000                                                                                               # Number of simulation samples
 sampleTime = 0.02                                                                                       # Simulation time per sample. Usually at 0.02, other values could cause instabillity in the simulation
 use_target_coordinates = False                                                                           # To use coordinates as a target or to use a linear path
 use_moving_target = True                                                                               # To use moving target instead of target list (path following)

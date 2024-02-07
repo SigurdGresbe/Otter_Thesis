@@ -16,12 +16,9 @@ class PIDController:
 
         self.TauX_max = 250           # Max forward thrust
         self.TauX_min = 0.1          # Min forward thrust
-        self.Decel_distance = 10
 
-        self.negative_thrust_distance = 10  # Distance from target when negative thrust is acceptable
-        self.max_negative_thrust = 200
 
-        self.integrator_limits = [0, 5]
+        self.integrator_limits = [0, 5]     # Limits the integrator in both regulators
 
         self.previous_distance = None
 
@@ -52,7 +49,6 @@ class PIDController:
         output = (self.kp * error) + (self.ki * self.integral) + (self.kd * derivative)
 
 
-
         return output
 
 
@@ -64,8 +60,7 @@ class PIDController:
         error = (setpoint - measured_value + math.pi) % (2 * math.pi) - math.pi
 
         if ((distance_to_target - (surge_radius + 2)) < 0):
-            self.integral = 0
-            #error = 0
+            self.integral = 0                                                   # Resets the integral when the target is reached. Probably is a better method than this.
 
         self.integral += error * sample_time if sample_time > 0 else 0
         self.integral = max(min(self.integral, self.integrator_limits[1]), self.integrator_limits[0])
@@ -74,9 +69,6 @@ class PIDController:
 
 
         output = (self.kp * error) + (self.ki * self.integral) + (self.kd * derivative)
-
-        if output < 0:
-            sss = 1
 
 
         return output

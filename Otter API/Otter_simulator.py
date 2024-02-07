@@ -303,12 +303,12 @@ class otter_simulator():
                 if counter % 100 == 0:
                     print(f"Running #{counter}")
 
-                # Prints time taken to reach desired target, used for tuning and debugging
+                # Stores time taken to reach desired target, used for tuning and debugging
                 if self.distance_to_target < self.surge_setpoint and not finished:
                     reached_target_time = counter * sampleTime
                     finished = True
 
-                # Prints if desired yaw is reached, used for tuning and debugging
+                # Stores time it took if desired yaw is reached, used for tuning and debugging
                 if (angle > 3.12 or angle < -3.12) and not finished_yaw:
                     self.reached_yaw_target_time = counter * sampleTime
                     finished_yaw = True
