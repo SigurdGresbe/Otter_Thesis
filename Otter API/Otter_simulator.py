@@ -5,30 +5,26 @@ import time
 
 class otter_simulator():
 
-    def __init__(self, target_list, use_target_coordinates, surge_target_radius, always_face_target, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached):
+    def __init__(self, target_list, use_target_coordinates, surge_target_radius, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached, verbose):
 
-        # Options:
+        # Variable initializations:
         self.use_target_coordinates = use_target_coordinates
         self.use_moving_target = use_moving_target
         self.moving_target_increase = moving_target_increase
-
         self.moving_target = moving_target_start
-        self.target_list = target_list     # Position of target in (m) from Otter.
-        self.surge_setpoint = surge_target_radius  # Distance to aim for from target, usually 0
+        self.target_list = target_list
+        self.surge_setpoint = surge_target_radius
         self.last_target = target_list[-1]
         self.end_when_last_target_reached = end_when_last_target_reached
+        self.verbose = verbose
+
+        self.max_force = 250                                                                    # Combined max force in yaw and surge. Used for saturation of control forces
+        self.V_c = 0.0                                                                          # Starting speed (m/s)
+        starting_yaw_angle = 0.0                                                                # Starting yaw angle
 
 
-        self.V_c = 0.0      # Starting speed (m/s)
-        starting_yaw_angle = 0.0   # Starting yaw angle
-
-        # Does the Otter have to face directly at the center of the target when inside the target radius (causes instabillity when reaching the target)
-        self.always_face_target = always_face_target
-
-
-        # If not using target coordinates, but instead using a surge distance and a heading:
-        self.distance_to_target = 100
-        self.yaw_setpoint = -90
+        self.distance_to_target = 100                                                           # If not using target coordinates or a moving target, but instead using a surge distance and a heading:
+        self.yaw_setpoint = -90                                                                 # If not using target coordinates or a moving target, but instead using a surge distance and a heading:
 
 
 
@@ -157,31 +153,34 @@ class otter_simulator():
 
         self.D = -np.diag([Xu, Yv, Zw, Kp, Mq, Nr])
 
-
+        self.mass = m + self.mp
 
 
     def simulate(self, N, sampleTime, otter, surge_PID, yaw_PID):
 
-        counter = 0
+        counter = 0                         #
+        reached_target_time = 0             #
+        self.reached_yaw_target_time = 0    #  For tuning, prints time in console
+        finished = False                    #
+        finished_yaw = False                #
 
-        yaw_setpoint = 0  # Heading setpoint, this will be updated in the loop if using a target
+        yaw_setpoint = 0                    # Heading setpoint, this will be updated in the loop if using a target
 
 
         DOF = 6  # degrees of freedom
         t = 0  # initial simulation time
 
         # Initial state vectors
-        eta = np.array([0, 0, 0, 0, 0, 0], float)    # position/attitude, user editable, eta[0] = north, eta[1] = east, eta[5] = yaw angle
-        nu = self.nu                              # velocity
-        u_actual = self.u_actual                  # actual inputs
+        eta = np.array([0, 0, 0, 0, 0, 0], float)   # position/attitude, user editable, eta[0] = north, eta[1] = east, eta[5] = yaw angle
+        nu = self.nu                                # velocity
+        u_actual = self.u_actual                    # actual inputs
 
         # Intitial target array
         self.targetData = np.array([self.moving_target[0], self.moving_target[1]])
 
 
-        # Initialization of table used to store the simulation data
+        # Table used to store the simulation data
         simData = np.empty([0, 2 * DOF + 2 * self.dimU], float)
-
 
 
         # Sets the first target from the target list
@@ -195,13 +194,13 @@ class otter_simulator():
         while i < (N + 1):
             t = i * sampleTime
 
-            if self.use_target_coordinates:
+            if self.use_target_coordinates:                                                                                 # If target coordinates are used
             # Calculates the distance to the target
                 north_distance = self.target_coordinates[0] - eta[0]
                 east_distance = self.target_coordinates[1] - eta[1]
                 self.distance_to_target = math.sqrt(north_distance**2 + east_distance**2)
 
-                # Goes to the next target when the target is reached
+                # Goes to the next target when the current target is reached
                 if self.distance_to_target < self.surge_setpoint and (self.target_counter + 1) < len(self.target_list):
                     self.target_counter = self.target_counter + 1
                     self.target_coordinates = self.target_list[self.target_counter]
@@ -215,15 +214,15 @@ class otter_simulator():
                     if self.target_coordinates == self.last_target:
                         if self.distance_to_target < self.surge_setpoint:
                             i = N
+                            print(f"Time is: {counter*sampleTime}s!")
 
-                # Calculates the angle to the target in degrees. If this must be changed to radians, remember to change the controller aswell as this is set up for degrees!
-
+                # Calculates the angle to the target in radians
                 self.yaw_setpoint = math.atan2(east_distance, north_distance)
                 #self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
 
 
             # Handles the tracking of the moving target
-            if self.use_moving_target:
+            if self.use_moving_target:                                                                  # If a moving target is used
                 # Calculate distance to target:
                 north_distance = self.moving_target[0] - eta[0]
                 east_distance = self.moving_target[1] - eta[1]
@@ -239,24 +238,45 @@ class otter_simulator():
                 #self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
 
                 # Increases the target values every second
-                if counter % (1/sampleTime) == 0:
-                    self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]
-                    self.moving_target[1] = self.moving_target[1] + self.moving_target_increase[1]
+                if counter % (1/sampleTime) == 0:                                                                           #
+                    if counter >= 15000 and counter < 25000:                                                                #
+                        self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]                      #
+                        self.moving_target[1] = self.moving_target[1] - self.moving_target_increase[1]                      #
+                                                                                                                            #
+                    elif counter >= 25000 and counter < 35000:                                                              #
+                        self.moving_target[0] = self.moving_target[0] - self.moving_target_increase[0]/4                    #
+                        self.moving_target[1] = self.moving_target[1] - self.moving_target_increase[1]/4                    #
+                                                                                                                            #
+                    elif counter >= 35000 and counter < 50000:                                                              #
+                        self.moving_target[0] = self.moving_target[0] - self.moving_target_increase[0]*4                    #   Some random target movement, edit to test different paths
+                        self.moving_target[1] = self.moving_target[1]                                                       #
+                                                                                                                            #
+                    elif counter > 50000:                                                                                   #
+                        self.moving_target[0] = self.moving_target[0]                                                       #
+                        self.moving_target[1] = self.moving_target[1]                                                       #
+                                                                                                                            #
+                    else:                                                                                                   #
+                        self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]                      #
+                        self.moving_target[1] = self.moving_target[1] + self.moving_target_increase[1]                      #
 
 
-            # Get forces for surge and yaw
-            #angle = eta[5] * (180 / math.pi)
-            angle = eta[5]
-            tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle)
-            tau_N = yaw_PID.calculate_yaw(self.yaw_setpoint, angle)
-
-            if not self.always_face_target:
-                if self.distance_to_target < self.surge_setpoint:
-                    tau_N = 0
 
 
-           # tau_X = 100
-           # tau_N = 0
+            angle = eta[5]                                                                                                          # Gets the current heading of the Otter
+            tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle, self.mass)    # Gets surge control force
+            tau_N = yaw_PID.calculate_yaw(self.yaw_setpoint, angle, self.surge_setpoint, self.distance_to_target)                   # Gets yaw control force
+
+
+            tau_N = max(min(tau_N, self.max_force), -(self.max_force))      #
+                                                                            #
+            remaining_force = self.max_force - tau_N                        #
+                                                                            #   Makes sure that the forces are not over saturated and prioritizes yaw movement
+            if tau_X > remaining_force:                                     #
+                tau_X = remaining_force                                     #
+            elif tau_X < -(remaining_force):                                #
+                tau_X = -(remaining_force)                                  #
+
+
 
 
             # Calculate thruster speeds in rad/s
@@ -276,8 +296,23 @@ class otter_simulator():
 
             # Counts and prints the current number of simulation
             counter = counter +1
-            if counter % 100 == 0:
-                print(f"Running #{counter}")
+
+            # Prints if target is reached used for tuning and debugging
+            if self.verbose:
+                # Prints every 100 samples simulated
+                if counter % 100 == 0:
+                    print(f"Running #{counter}")
+
+                # Prints time taken to reach desired target, used for tuning and debugging
+                if self.distance_to_target < self.surge_setpoint and not finished:
+                    reached_target_time = counter * sampleTime
+                    finished = True
+
+                # Prints if desired yaw is reached, used for tuning and debugging
+                if (angle > 3.12 or angle < -3.12) and not finished_yaw:
+                    self.reached_yaw_target_time = counter * sampleTime
+                    finished_yaw = True
+
 
             newTargetData = [self.moving_target[0], self.moving_target[1]]
             self.targetData = np.vstack([self.targetData, newTargetData])
@@ -288,6 +323,10 @@ class otter_simulator():
 
         simTime = np.arange(start=0, stop=t+sampleTime, step=sampleTime)[:, None]
         targetData = self.targetData
+
+        if self.verbose:
+            print(f"Reached target in {reached_target_time}s")
+            print(f"Reached yaw target in {self.reached_yaw_target_time}s")
 
         return (simTime, simData, targetData)
 

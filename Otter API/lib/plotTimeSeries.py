@@ -179,7 +179,7 @@ def plot3D(simData,numDataPoints,FPS,filename,figNo):
         
         line.set_data(dataSet[0:2, :num])    
         line.set_3d_properties(dataSet[2, :num])    
-        ax.view_init(elev=10.0, azim=-120.0)
+        ax.view_init(elev=50.0, azim=-120.0)
         
         return line
     

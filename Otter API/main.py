@@ -1,69 +1,69 @@
 import Otter_api
-import Controller_test
+import Controller_test_v2
 import Otter_simulator
 from lib.plotTimeSeries import *
 
 
-# Simulation options
-N = 25000                  # Number of simulation samples
-sampleTime = 0.02           # Simulation time
-
-# Targeting
-use_target_coordinates = False           # To use coordinates as a target or to use a linear path
-use_moving_target = True               # To use moving target instead of target list (path following)
-
-#target_list = [[-20, 0], [-30, 10], [-20, 20], [-10, 10], [-10, 60], [0, 70], [10, 60], [10, 10], [20, 20], [30, 10], [20, 0], [0, 0]] # Coordinates of target
-#target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]
-target_list = [[-1000, 0]]
-
-moving_target_start = [-100, -70]
-moving_target_increase = [-0.15, 0.05]       # Movement of the moving target each second
-
-end_when_last_target_reached = True         # Ends the simulation when the final target is reached
+##########################################################################################################################################################
+#                                                                      OPTIONS                                                                           #
+##########################################################################################################################################################
 
 
-surge_target_radius = 1                     # Radius of the target or the distance from the target that counts as target reached
-always_face_target = True              # Does the Otter have to face directly at the center of the target when inside the target radius (causes instabillity when reaching the target)
-#TODO Lag noe bedre greier enn dette (always face target), funker sånn halvveis
+N = 60000                                                                                               # Number of simulation samples
+sampleTime = 0.02                                                                                       # Simulation time per sample. Usually at 0.02, other values could cause instabillity in the simulation
+use_target_coordinates = False                                                                           # To use coordinates as a target or to use a linear path
+use_moving_target = True                                                                               # To use moving target instead of target list (path following)
+target_list = [[100, 100], [200, -100], [300, 100], [400, -100], [-500, -100], [-500, 400], [0, 0]]     # List of targets to use if use_target_coordinates is set to True
+end_when_last_target_reached = False                                                                    # Ends the simulation when the final target is reached
+moving_target_start = [300, 0]                                                                          # Start point of the moving target if use_moving_target is set to True
+moving_target_increase = [0.5, -0.1]                                                                      # Movement of the moving target each second
+target_radius = 4                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
+verbose = True
 
-
-
-# Creates Otter object
-otter = Otter_api.otter()
-simulator = Otter_simulator.otter_simulator(target_list, use_target_coordinates, surge_target_radius, always_face_target, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached)
-
-
-# Some values needed for the plotting
-otter.controls = ["Left propeller shaft speed (rad/s)", "Right propeller shaft speed (rad/s)"]
-otter.dimU = len(otter.controls)
-
-# 3D plot and animation parameters where browser = {firefox,chrome,safari,etc.}
-numDataPoints = 50                  # number of 3D data points
-FPS = 10                            # frames per second (animated GIF)
-filename = '3D_animation.gif'       # data file for animated GIF
-browser = 'chrome'                  # browser for visualization of animated GIF
+#############################################################################################################################################################################################################################################################
+#                                                                                                                                                                                                                                                           #
+#                                                                                                                                                                                                                                                           #
+#                                                                                                               MAIN CODE BELOW!                                                                                                                            #
+#                                                                                                                                                                                                                                                           #
+#                                                                                                                                                                                                                                                           #
+#############################################################################################################################################################################################################################################################
 
 
 
-# Creating two controller objects for surge and yaw
-#TODO Må tunes!!!
-surge_kp = 86
-surge_ki = 12
-surge_kd = 81
-yaw_kp = 108
-yaw_ki = 15
-yaw_kd = 68
 
-surge_PID = Controller_test.PIDController(surge_kp, surge_ki, surge_kd)
-yaw_PID = Controller_test.PIDController(yaw_kp, yaw_ki, yaw_kd)
+otter = Otter_api.otter()                                                                                                                                                                               # Creates Otter object from the API
+simulator = Otter_simulator.otter_simulator(target_list, use_target_coordinates, target_radius, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached, verbose)           # Creates Simulator object
 
 
+otter.controls = ["Left propeller shaft speed (rad/s)", "Right propeller shaft speed (rad/s)"]          # Some values needed for the plotting
+otter.dimU = len(otter.controls)                                                                        #
 
-# Introduction part
-print("Welcome to the Otter controller simulator")
+numDataPoints = 50                                                                                      # number of 3D data points
+FPS = 10                                                                                                # frames per second (animated GIF)
+filename = '3D_animation.gif'                                                                           # data file for animated GIF
+browser = 'chrome'                                                                                      # browser for visualization of animated GIF
 
-print("(1): Simulate Otter")
-print("(2): Connect and use live Otter")
+
+
+
+surge_kp = 86                                                                                           #
+surge_ki = 12                                                                                           # Surge PID controller values
+surge_kd = 81                                                                                           #
+
+yaw_kp = 108                                                                                            #
+yaw_ki = 15                                                                                             # Yaw PID controller values
+yaw_kd = 68                                                                                             #
+
+
+
+surge_PID = Controller_test_v2.PIDController(surge_kp, surge_ki, surge_kd)                              # Surge PID object
+yaw_PID = Controller_test_v2.PIDController(yaw_kp, yaw_ki, yaw_kd)                                      # Yaw PID object
+
+
+
+print("Welcome to the Otter controller simulator")                                                      #
+print("(1): Simulate Otter")                                                                            # Main introduction part
+print("(2): Connect and use live Otter")                                                                #
 
 try:
     # Uncomment to choose between simulating and using a live connection
@@ -76,18 +76,18 @@ except:
     option = 1
 
 
-print(len(target_list))
+
 
 # Main:
 def main(option):
 
     if option == 1:
-        [simTime, simData, targetData] = simulator.simulate(N, sampleTime, otter, surge_PID, yaw_PID)
+        [simTime, simData, targetData] = simulator.simulate(N, sampleTime, otter, surge_PID, yaw_PID)   # This runs the whole simulation
 
-        plotVehicleStates(simTime, simData, 1)
-        plotControls(simTime, simData, otter, 2)
-        plot3D(simData, numDataPoints, FPS, filename, 3)
-        plotPosTar(simTime, simData, 4, targetData)
+        plotVehicleStates(simTime, simData, 1)                                                          #
+        plotControls(simTime, simData, otter, 2)                                                        #
+        plot3D(simData, numDataPoints, FPS, filename, 3)                                                #
+        plotPosTar(simTime, simData, 4, targetData)                                                     # Plotting......
         # Saves a GIF for 3d animation in the same folder as main
 
 
