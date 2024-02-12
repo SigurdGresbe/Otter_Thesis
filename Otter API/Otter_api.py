@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
   #  otter.set_thrusters(0.3, 1)
   
-    otter.controller_inputs_torque(140, 70)
+    otter.controller_inputs_torque(200, 0)
 
 
 

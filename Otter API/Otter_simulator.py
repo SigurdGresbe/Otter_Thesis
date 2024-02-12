@@ -18,7 +18,7 @@ class otter_simulator():
         self.end_when_last_target_reached = end_when_last_target_reached
         self.verbose = verbose
 
-        self.max_force = 250                                                                    # Combined max force in yaw and surge. Used for saturation of control forces
+        self.max_force = 200                                                                    # Combined max force in yaw and surge. Used for saturation of control forces
         self.V_c = 0.0                                                                          # Starting speed (m/s)
         starting_yaw_angle = 0.0                                                                # Starting yaw angle
 
@@ -263,9 +263,8 @@ class otter_simulator():
 
 
             angle = eta[5]                                                                                                          # Gets the current heading of the Otter
-            tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle, self.mass)    # Gets surge control force
+            tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle)               # Gets surge control force
             tau_N = yaw_PID.calculate_yaw(self.yaw_setpoint, angle, self.surge_setpoint, self.distance_to_target)                   # Gets yaw control force
-
 
             tau_N = max(min(tau_N, self.max_force), -(self.max_force))      #
                                                                             #

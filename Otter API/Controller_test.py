@@ -26,6 +26,8 @@ class PIDController:
         sample_time = current_time - self.previous_time
         self.previous_time = current_time
 
+
+
         error = surge_radius - distance_to_target
         if distance_to_target < surge_radius:
             error = 0
@@ -60,6 +62,8 @@ class PIDController:
         current_time = time.time()
         sample_time = current_time - self.previous_time
         self.previous_time = current_time
+
+        sample_time = 0.02
 
         #error = (setpoint - measured_value + 180) % 360 - 180
         error = (setpoint - measured_value + math.pi) % (2 * math.pi) - math.pi

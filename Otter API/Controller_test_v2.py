@@ -14,16 +14,12 @@ class PIDController:
         self.previous_time = None
 
 
-        self.TauX_max = 250           # Max forward thrust
-        self.TauX_min = 0.1          # Min forward thrust
-
-
         self.integrator_limits = [0, 5]     # Limits the integrator in both regulators
 
         self.previous_distance = None
 
 
-    def calculate_surge(self, surge_radius, distance_to_target, yaw_setpoint, yaw_measured, mass):
+    def calculate_surge(self, surge_radius, distance_to_target, yaw_setpoint, yaw_measured):
         current_time = time.time()
         sample_time = current_time - self.previous_time if self.previous_time else 0
         self.previous_time = current_time
@@ -57,10 +53,12 @@ class PIDController:
         sample_time = current_time - self.previous_time if self.previous_time else 0
         self.previous_time = current_time
 
+
         error = (setpoint - measured_value + math.pi) % (2 * math.pi) - math.pi
 
         if ((distance_to_target - (surge_radius + 2)) < 0):
-            self.integral = 0                                                   # Resets the integral when the target is reached. Probably is a better method than this.
+            self.integral = 0                                           # Resets the integral when the target is reached. Probably is a better method than this.
+            error = 0
 
         self.integral += error * sample_time if sample_time > 0 else 0
         self.integral = max(min(self.integral, self.integrator_limits[1]), self.integrator_limits[0])
