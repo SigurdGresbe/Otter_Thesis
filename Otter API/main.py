@@ -18,7 +18,8 @@ end_when_last_target_reached = False                                            
 moving_target_start = [300, 0]                                                                          # Start point of the moving target if use_moving_target is set to True
 moving_target_increase = [0.5, -1]                                                                      # Movement of the moving target each second
 target_radius = 5                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
-verbose = True
+verbose = True                                                                                          # Enable verbose printing
+store_force_file = False                                                                                # Store the simulated control forces in a .csv file
 
 #############################################################################################################################################################################################################################################################
 #                                                                                                                                                                                                                                                           #
@@ -31,8 +32,8 @@ verbose = True
 
 
 
-otter = Otter_api.otter()                                                                                                                                                                               # Creates Otter object from the API
-simulator = Otter_simulator.otter_simulator(target_list, use_target_coordinates, target_radius, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached, verbose)           # Creates Simulator object
+otter = Otter_api.otter()                                                                                                                                                                                                          # Creates Otter object from the API
+simulator = Otter_simulator.otter_simulator(target_list, use_target_coordinates, target_radius, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached, verbose, store_force_file)           # Creates Simulator object
 
 
 otter.controls = ["Left propeller shaft speed (rad/s)", "Right propeller shaft speed (rad/s)"]          # Some values needed for the plotting
@@ -46,13 +47,13 @@ browser = 'chrome'                                                              
 
 
 
-surge_kp = 86                                                                                           #
+surge_kp = 86                                                                                            #
 surge_ki = 8.6                                                                                           # Surge PID controller values
-surge_kd = 70                                                                                           #
+surge_kd = 70                                                                                            #
 
-yaw_kp = 90                                                                                           #
-yaw_ki = 9                                                                                             # Yaw PID controller values
-yaw_kd = 55                                                                                             #
+yaw_kp = 90                                                                                              #
+yaw_ki = 9                                                                                               # Yaw PID controller values
+yaw_kd = 55                                                                                              #
 
 
 

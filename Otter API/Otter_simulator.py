@@ -5,7 +5,7 @@ import time
 
 class otter_simulator():
 
-    def __init__(self, target_list, use_target_coordinates, surge_target_radius, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached, verbose):
+    def __init__(self, target_list, use_target_coordinates, surge_target_radius, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached, verbose, store_force_file):
 
         # Variable initializations:
         self.use_target_coordinates = use_target_coordinates
@@ -17,6 +17,7 @@ class otter_simulator():
         self.last_target = target_list[-1]
         self.end_when_last_target_reached = end_when_last_target_reached
         self.verbose = verbose
+        self.store_force_file = store_force_file
 
         self.max_force = 200                                                                    # Combined max force in yaw and surge. Used for saturation of control forces
         self.V_c = 0.0                                                                          # Starting speed (m/s)
@@ -25,6 +26,8 @@ class otter_simulator():
 
         self.distance_to_target = 100                                                           # If not using target coordinates or a moving target, but instead using a surge distance and a heading:
         self.yaw_setpoint = -90                                                                 # If not using target coordinates or a moving target, but instead using a surge distance and a heading:
+
+        self.force_array = np.empty((0, 2), float)
 
 
 
@@ -268,12 +271,17 @@ class otter_simulator():
 
             tau_N = max(min(tau_N, self.max_force), -(self.max_force))      #
                                                                             #
-            remaining_force = self.max_force - tau_N                        #
+            remaining_force = self.max_force - abs(tau_N)                        #
                                                                             #   Makes sure that the forces are not over saturated and prioritizes yaw movement
             if tau_X > remaining_force:                                     #
                 tau_X = remaining_force                                     #
             elif tau_X < -(remaining_force):                                #
                 tau_X = -(remaining_force)                                  #
+
+
+            if self.store_force_file:                                       #
+                forces = np.array([tau_X, tau_N])                           # Stores all the forces in a .csv file
+                self.force_array = np.vstack((self.force_array, forces))    #
 
 
 
@@ -322,6 +330,9 @@ class otter_simulator():
 
         simTime = np.arange(start=0, stop=t+sampleTime, step=sampleTime)[:, None]
         targetData = self.targetData
+
+        if self.store_force_file:
+            np.savetxt("force_array.csv", self.force_array, delimiter=";", header="tau_X;tau_N", comments="")
 
         if self.verbose:
             print(f"Reached target in {reached_target_time}s")
