@@ -9,17 +9,17 @@ from lib.plotTimeSeries import *
 ##########################################################################################################################################################
 
 
-N = 55000                                                                                               # Number of simulation samples
+N = 25000                                                                                               # Number of simulation samples
 sampleTime = 0.02                                                                                       # Simulation time per sample. Usually at 0.02, other values could cause instabillity in the simulation
 use_target_coordinates = False                                                                          # To use coordinates as a target or to use a linear path
 use_moving_target = True                                                                                # To use moving target instead of target list (path following)
 target_list = [[100, 100], [200, -100], [300, 100], [400, -100]]                                        # List of targets to use if use_target_coordinates is set to True
 end_when_last_target_reached = False                                                                    # Ends the simulation when the final target is reached
-moving_target_start = [300, 0]                                                                          # Start point of the moving target if use_moving_target is set to True
-moving_target_increase = [0.5, -1]                                                                      # Movement of the moving target each second
+moving_target_start = [100, 100]                                                                          # Start point of the moving target if use_moving_target is set to True
+moving_target_increase = [0, 0.3]                                                                      # Movement of the moving target each second
 target_radius = 5                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
-store_force_file = False                                                                                # Store the simulated control forces in a .csv file
+store_force_file = True                                                                                # Store the simulated control forces in a .csv file
 
 #############################################################################################################################################################################################################################################################
 #                                                                                                                                                                                                                                                           #

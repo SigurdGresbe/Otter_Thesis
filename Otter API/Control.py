@@ -158,6 +158,10 @@ class otter_control():
             self.n1_neg = True
         if n2 < 0:
             self.n2_neg = True
+        if n1 > 0:
+            self.n1_neg = False
+        if n2 > 0:
+            self.n2_neg = False
 
 
         n1_rpm = abs(n1) / ((2*pi) / 60)
@@ -171,6 +175,11 @@ class otter_control():
 
         n1_throttle = self.rpm_to_throttle_spline(n1_rpm) / 100
         n2_throttle = self.rpm_to_throttle_spline(n2_rpm) / 100
+
+        if n1_throttle < 0:
+            n1_throttle = n1_throttle * -1
+        if n2_throttle < 0:
+            n2_throttle = n2_throttle * -1
 
         if self.n1_neg:
             n1_throttle = n1_throttle * -1

@@ -244,7 +244,7 @@ class otter_simulator():
                 if counter % (1/sampleTime) == 0:                                                                           #
                     if counter >= 15000 and counter < 25000:                                                                #
                         self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]                      #
-                        self.moving_target[1] = self.moving_target[1] - self.moving_target_increase[1]                      #
+                        self.moving_target[1] = self.moving_target[1] + self.moving_target_increase[1]                      #
                                                                                                                             #
                     elif counter >= 25000 and counter < 35000:                                                              #
                         self.moving_target[0] = self.moving_target[0] - self.moving_target_increase[0]/4                    #

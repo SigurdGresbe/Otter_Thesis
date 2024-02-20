@@ -1,3 +1,4 @@
+
 import Otter_api
 import pandas as pd
 import time
@@ -7,7 +8,7 @@ import time
 lines_per_second_stored = 50
 lines_per_second_output = 10
 
-ip = "localhost"
+ip = "10.0.5.1"
 
 
 
@@ -34,6 +35,16 @@ otter.establish_connection(ip, 2009)
 
 cycletime = 1/lines_per_second_output
 counter = 0
+
+otter.controller_inputs_torque(20, 0)
+time.sleep(1)
+otter.controller_inputs_torque(20, 0)
+time.sleep(1)
+otter.controller_inputs_torque(20, 0)
+time.sleep(1)
+otter.controller_inputs_torque(20, 0)
+time.sleep(1)
+
 
 while True:
     start_time = time.time()
