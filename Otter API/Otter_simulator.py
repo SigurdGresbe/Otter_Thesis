@@ -5,7 +5,7 @@ import time
 
 class otter_simulator():
 
-    def __init__(self, target_list, use_target_coordinates, surge_target_radius, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached, verbose, store_force_file):
+    def __init__(self, target_list, use_target_coordinates, surge_target_radius, use_moving_target, moving_target_start, moving_target_increase, end_when_last_target_reached, verbose, store_force_file, circular_target):
 
         # Variable initializations:
         self.use_target_coordinates = use_target_coordinates
@@ -18,6 +18,7 @@ class otter_simulator():
         self.end_when_last_target_reached = end_when_last_target_reached
         self.verbose = verbose
         self.store_force_file = store_force_file
+        self.circular_target = circular_target
 
         self.max_force = 200                                                                    # Combined max force in yaw and surge. Used for saturation of control forces
         self.V_c = 0.0                                                                          # Starting speed (m/s)
@@ -159,6 +160,7 @@ class otter_simulator():
         self.mass = m + self.mp
 
 
+
     def simulate(self, N, sampleTime, otter, surge_PID, yaw_PID):
 
         counter = 0                         #
@@ -166,6 +168,7 @@ class otter_simulator():
         self.reached_yaw_target_time = 0    #  For tuning, prints time in console
         finished = False                    #
         finished_yaw = False                #
+        asd = 0
 
         yaw_setpoint = 0                    # Heading setpoint, this will be updated in the loop if using a target
 
@@ -239,28 +242,35 @@ class otter_simulator():
 
                 self.yaw_setpoint = math.atan2(east_distance, north_distance)
                 #self.yaw_setpoint = self.yaw_setpoint  * (180 / math.pi)
+                if not self.circular_target:
+                    # Increases the target values every second
+                    if counter % (1/sampleTime) == 0:                                                                           #
+                        if counter >= 15000 and counter < 25000:                                                                #
+                            self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]                      #
+                            self.moving_target[1] = self.moving_target[1] - self.moving_target_increase[1]                      #
+                                                                                                                                #
+                        elif counter >= 25000 and counter < 35000:                                                              #
+                            self.moving_target[0] = self.moving_target[0] - self.moving_target_increase[0]/4                    #
+                            self.moving_target[1] = self.moving_target[1] - self.moving_target_increase[1]/4                    #
+                                                                                                                                #
+                        elif counter >= 35000 and counter < 50000:                                                              #
+                            self.moving_target[0] = self.moving_target[0] - self.moving_target_increase[0]*4                    #   Some random target movement, edit to test different paths
+                            self.moving_target[1] = self.moving_target[1]                                                       #
+                                                                                                                                #
+                        elif counter > 50000:                                                                                   #
+                            self.moving_target[0] = self.moving_target[0]                                                       #
+                            self.moving_target[1] = self.moving_target[1]                                                       #
+                                                                                                                                #
+                        else:                                                                                                   #
+                            self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]                      #
+                            self.moving_target[1] = self.moving_target[1] + self.moving_target_increase[1]                      #
 
-                # Increases the target values every second
-                if counter % (1/sampleTime) == 0:                                                                           #
-                    if counter >= 15000 and counter < 25000:                                                                #
-                        self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]                      #
-                        self.moving_target[1] = self.moving_target[1] + self.moving_target_increase[1]                      #
-                                                                                                                            #
-                    elif counter >= 25000 and counter < 35000:                                                              #
-                        self.moving_target[0] = self.moving_target[0] - self.moving_target_increase[0]/4                    #
-                        self.moving_target[1] = self.moving_target[1] - self.moving_target_increase[1]/4                    #
-                                                                                                                            #
-                    elif counter >= 35000 and counter < 50000:                                                              #
-                        self.moving_target[0] = self.moving_target[0] - self.moving_target_increase[0]*4                    #   Some random target movement, edit to test different paths
-                        self.moving_target[1] = self.moving_target[1]                                                       #
-                                                                                                                            #
-                    elif counter > 50000:                                                                                   #
-                        self.moving_target[0] = self.moving_target[0]                                                       #
-                        self.moving_target[1] = self.moving_target[1]                                                       #
-                                                                                                                            #
-                    else:                                                                                                   #
-                        self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]                      #
-                        self.moving_target[1] = self.moving_target[1] + self.moving_target_increase[1]                      #
+                else:
+                    omega = 1.5 / 50
+                    asd = asd + sampleTime
+                    theta = omega * asd
+                    self.moving_target[0] = 100 + 50 * np.cos(theta)
+                    self.moving_target[1] = 100 + 50 * np.sin(theta)
 
 
 
