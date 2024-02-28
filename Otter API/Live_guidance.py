@@ -2,7 +2,9 @@ import numpy as np
 import time
 import Otter_api
 import math
-
+import datetime
+import pandas as pd
+import os
 
 class live_guidance():
 
@@ -39,6 +41,9 @@ class live_guidance():
         self.otter.observer_coordinates = self.referance_point
         self.target_ne_pos = [start_north, start_east]
 
+        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        self.log = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
+
 
 
         print(f"Starting tracking. North error is {start_north}m and east error is {start_east}m")
@@ -53,6 +58,17 @@ class live_guidance():
                 self.target_ne_pos = [self.target_ne_pos[0] + (v_north/(1/self.cycletime)), self.target_ne_pos[1] + (v_east/(1/self.cycletime))]    # Updates target
 
 
+
+                current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+                temp_df = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
+
+                # This makes sure there is no duplicates of datetimes in the log
+                if current_datetime in self.log.index:
+                    self.log.loc[current_datetime] = temp_df.loc[current_datetime]
+                else:
+                    self.log = pd.concat([self.log, temp_df])
+
+
                 elapsed_time = time.time() - start_time
                 if elapsed_time < self.cycletime:
                     time.sleep(self.cycletime - elapsed_time)
@@ -61,6 +77,15 @@ class live_guidance():
         except KeyboardInterrupt:
             print("Tracking disabled. Otter is now in drift mode")
             self.otter.drift()
+
+            logs_dir = 'logs'
+            if not os.path.exists(logs_dir):
+                os.makedirs(logs_dir)
+
+            filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '.csv'
+            file_path = os.path.join(logs_dir, filename)
+            self.log.to_csv(file_path, sep=';')
+
             time.sleep(10)
 
 
@@ -71,6 +96,9 @@ class live_guidance():
 
         self.referance_point = [self.otter.sorted_values["lat"], self.otter.sorted_values["lon"]]
         self.otter.observer_coordinates = self.referance_point
+
+        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        self.log = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
 
         self.function_time = time.time()
 
@@ -86,6 +114,17 @@ class live_guidance():
                 tau_X, tau_N = self.calculate_forces()
                 self.otter.controller_inputs_torque(tau_X, tau_N)
 
+
+                current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+                temp_df = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
+
+                # This makes sure there is no duplicates of datetimes in the log
+                if current_datetime in self.log.index:
+                    self.log.loc[current_datetime] = temp_df.loc[current_datetime]
+                else:
+                    self.log = pd.concat([self.log, temp_df])
+
+
                 elapsed_time = time.time() - start_time
                 if elapsed_time < self.cycletime:
                     time.sleep(self.cycletime - elapsed_time)
@@ -94,6 +133,16 @@ class live_guidance():
         except KeyboardInterrupt:
             print("Tracking disabled. Otter is now in drift mode")
             self.otter.drift()
+
+            logs_dir = 'logs'
+            if not os.path.exists(logs_dir):
+                os.makedirs(logs_dir)
+
+            filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '.csv'
+            file_path = os.path.join(logs_dir, filename)
+            self.log.to_csv(file_path, sep=';')
+
+
             time.sleep(10)
 
 
