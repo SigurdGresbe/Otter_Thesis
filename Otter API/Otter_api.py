@@ -35,7 +35,7 @@ class otter():
 
 
     # Tries to establish connection to the otter. Default values are in place for testing on a local machine with a test server. Returns boolean
-    def establish_connection(self, ip="localhost", port=2009):
+    def establish_connection(self, ip, port):
         return self.otter_connector.establish_connection(ip, port)
 
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
 
     # Establishes a socket connection to the Otter with IP and the PORT'
-    otter.establish_connection("localhost", 2009)
+    otter.establish_connection("192.168.53.2", 2009)
 
 
     # Write test commands under here:

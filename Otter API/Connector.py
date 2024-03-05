@@ -61,6 +61,8 @@ class otter_connector():
     def establish_connection(self, ip, port):
 
         try:
+            if self.verbose:
+                print(f"Connecting with ip {ip} and port {port}")
             # Creates a socket object.
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((ip, port))

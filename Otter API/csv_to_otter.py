@@ -1,4 +1,3 @@
-
 import Otter_api
 import pandas as pd
 import time
@@ -8,7 +7,8 @@ import time
 lines_per_second_stored = 50
 lines_per_second_output = 10
 
-ip = "10.0.5.1"
+ip = "192.168.53.2"
+port = 2009
 
 
 
@@ -30,7 +30,7 @@ for i in range(groups):
 average_df = pd.DataFrame(average_list)
 
 otter = Otter_api.otter()
-otter.establish_connection(ip, 2009)
+otter.establish_connection(ip, port)
 
 
 cycletime = 1/lines_per_second_output

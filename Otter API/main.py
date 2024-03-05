@@ -18,20 +18,20 @@ target_list = [[100, 100], [200, -100], [300, 100], [400, -100]]                
 end_when_last_target_reached = False                                                                    # Ends the simulation when the final target is reached
 moving_target_start = [50, -50]                                                                        # Start point of the moving target if use_moving_target is set to True
 moving_target_increase = [0.3, -0.5]                                                                    # Movement of the moving target each second
-target_radius = 2                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
+target_radius = 3                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
 store_force_file = False                                                                                # Store the simulated control forces in a .csv file
 circular_target = False                                                                                  # Make the moving target a circle
 
 # When connecting to live otter and using target tracking
-ip = "localhost"
+ip = "10.0.5.1"
 port = 2009
-start_north = 50                                                                                          # Target north position from referance point
-start_east = 50                                                                                           # Target east position from referance point
-v_north = 0.3                                                                                             # Moving target speed north (m/s)
-v_east = 0.3                                                                                              # Moving target speed east (m/s)
-radius = 20                                                                                                # If tracking a circular motion
-v_circle = 0.5                                                                                            # Angular velocity (m/s)
+start_north = -10                                                                                          # Target north position from referance point
+start_east = 0                                                                                           # Target east position from referance point
+v_north = 1.0                                                                                             # Moving target speed north (m/s)
+v_east = 0.0                                                                                              # Moving target speed east (m/s)
+radius = 12                                                                                                # If tracking a circular motion
+v_circle = 1.2                                                                                            # Angular velocity (m/s)
 
 
 

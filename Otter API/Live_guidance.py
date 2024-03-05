@@ -28,7 +28,7 @@ class live_guidance():
 
         self.max_force = 200
         self.cycletime = 0.1
-        self.referance_point = [0, 0]
+        self.referance_point = [0, 0, 0]
         self.target = [0, 0]
         self.otter_ned_pos = [0, 0]
 
@@ -37,12 +37,20 @@ class live_guidance():
         self.otter.establish_connection(self.ip, self.port)
         self.otter.update_values()
 
-        self.referance_point = [self.otter.sorted_values["lat"], self.otter.sorted_values["lon"]]
+        self.referance_point = [self.otter.sorted_values["lat"], self.otter.sorted_values["lon"], 0.0]
         self.otter.observer_coordinates = self.referance_point
         self.target_ne_pos = [start_north, start_east]
 
-        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
         self.log = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
+
+
+        self.otter.controller_inputs_torque(15, 0)
+        time.sleep(2)
+        self.otter.controller_inputs_torque(15, 0)
+        time.sleep(2)
+        self.otter.controller_inputs_torque(15, 0)
+        time.sleep(2)
 
 
 
@@ -54,12 +62,21 @@ class live_guidance():
                 tau_X, tau_N = self.calculate_forces()
                 self.otter.controller_inputs_torque(tau_X, tau_N)
 
+                self.otter.sorted_values["north_error"] = self.north_error
+                self.otter.sorted_values["east_error"] = self.east_error
+                self.otter.sorted_values["distance_to_target"] = self.distance_to_target
+                self.otter.sorted_values["yaw_setpoint"] = self.yaw_setpoint
+                self.otter.sorted_values["current_angle"] = self.current_angle
+
+                self.otter.sorted_values["tau_X"] = tau_X
+                self.otter.sorted_values["tau_N"] = tau_N
+
 
                 self.target_ne_pos = [self.target_ne_pos[0] + (v_north/(1/self.cycletime)), self.target_ne_pos[1] + (v_east/(1/self.cycletime))]    # Updates target
 
 
 
-                current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+                current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
                 temp_df = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
 
                 # This makes sure there is no duplicates of datetimes in the log
@@ -94,11 +111,18 @@ class live_guidance():
         self.otter.establish_connection(self.ip, self.port)
         self.otter.update_values()
 
-        self.referance_point = [self.otter.sorted_values["lat"], self.otter.sorted_values["lon"]]
+        self.referance_point = [self.otter.sorted_values["lat"], self.otter.sorted_values["lon"], 0.0]
         self.otter.observer_coordinates = self.referance_point
 
-        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
         self.log = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
+
+        self.otter.controller_inputs_torque(15, 0)
+        time.sleep(2)
+        self.otter.controller_inputs_torque(15, 0)
+        time.sleep(2)
+        self.otter.controller_inputs_torque(15, 0)
+        time.sleep(2)
 
         self.function_time = time.time()
 
@@ -114,8 +138,16 @@ class live_guidance():
                 tau_X, tau_N = self.calculate_forces()
                 self.otter.controller_inputs_torque(tau_X, tau_N)
 
+                self.otter.sorted_values["north_error"] = self.north_error
+                self.otter.sorted_values["east_error"] = self.east_error
+                self.otter.sorted_values["distance_to_target"] = self.distance_to_target
+                self.otter.sorted_values["yaw_setpoint"] = self.yaw_setpoint
+                self.otter.sorted_values["current_angle"] = self.current_angle
 
-                current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+                self.otter.sorted_values["tau_X"] = tau_X
+                self.otter.sorted_values["tau_N"] = tau_N
+
+                current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
                 temp_df = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
 
                 # This makes sure there is no duplicates of datetimes in the log
