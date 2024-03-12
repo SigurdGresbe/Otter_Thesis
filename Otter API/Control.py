@@ -47,6 +47,7 @@ class otter_control():
         rpm_values = [0, 68, 85, 140, 200, 270, 340, 440, 640, 920, 1108]
         throttle_values = [15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60]
         self.rpm_to_throttle_spline = CubicSpline(rpm_values, throttle_values, extrapolate=False)
+        self.throttle_to_rpm_spline = CubicSpline(throttle_values, rpm_values, extrapolate=False)
 
 
         # Max values for movement
@@ -56,6 +57,9 @@ class otter_control():
 
         self.n1_neg = False
         self.n2_neg = False
+
+        self.thl_neg = False
+        self.thr_neg = False
 
 
 
@@ -190,6 +194,49 @@ class otter_control():
     #    n2_throttle = np.round(n2_throttle, 2)
 
         return n1_throttle, n2_throttle
+
+    # Returns radS for inputted throttle 0-1
+    def throttle_to_rads_interpolation(self, throttle_left, throttle_right):
+        if throttle_left < 0:
+            self.thl_neg = True
+            throttle_left = throttle_left * -1
+        else:
+            self.thl_neg = False
+        if throttle_right < 0:
+            self.thr_neg = True
+            throttle_right = throttle_right * -1
+        else:
+            self.thr_neg = False
+
+
+        if throttle_left >= 0.60:
+            throttle_left = 0.60
+        if throttle_left <= 0.15:
+            throttle_left = 0.15
+        if throttle_right >= 0.60:
+            throttle_right = 0.60
+        if throttle_right <= 0.15:
+            throttle_right = 0.15
+
+
+
+        n1 = self.throttle_to_rpm_spline(throttle_left * 100)
+        n2 = self.throttle_to_rpm_spline(throttle_right * 100)
+
+        n1 = n1 * ((2 * math.pi)/60)
+        n2 = n2 * ((2 * math.pi) / 60)
+
+        if n1 < 0:
+            n1 = n1 * -1
+        if n2 < 0:
+            n2 = n2 * -1
+
+        if self.thl_neg:
+            n1 = n1 * -1
+        if self.thr_neg:
+            n2 = n2 * -1
+
+        return n1, n2
 
     # Gives throttle using a linear throttle percentage
     def radS_to_throttle_linear(self, n1, n2):

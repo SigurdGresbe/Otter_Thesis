@@ -27,8 +27,8 @@ class PIDController:
         yaw_error = (yaw_setpoint - yaw_measured + math.pi) % (2 * math.pi) - math.pi
 
 
-        if (yaw_error > (math.pi/2) or yaw_error < -(math.pi/2)):       # Allows the thrusters to go in reverse if the target is passed
-            error = -(error)
+        #if (yaw_error > (math.pi/2) or yaw_error < -(math.pi/2)):       # Allows the thrusters to go in reverse if the target is passed
+            #error = -(error)
 
         self.integral += error * sample_time if sample_time > 0 else 0
         self.integral = max(min(self.integral, self.integrator_limits[1]), self.integrator_limits[0])
@@ -42,6 +42,9 @@ class PIDController:
 
         output = (self.kp * error) + (self.ki * self.integral) + (self.kd * derivative)
 
+        yaw_error_scale = yaw_error / math.pi                                                               #
+
+        output = output * (1 - abs(yaw_error_scale))                                                        # Test to scale surge down if yaw error is very big
 
         return output
 

@@ -15,30 +15,30 @@ import time
 ##########################################################################################################################################################
 
 
-N = 15000                                                                                               # Number of simulation samples
+N = 65000                                                                                               # Number of simulation samples
 sampleTime = 0.02                                                                                       # Simulation time per sample. Usually at 0.02, other values could cause instabillity in the simulation
 use_target_coordinates = False                                                                          # To use coordinates as a target or to use a linear path
 use_moving_target = True                                                                                # To use moving target instead of target list (path following)
-target_list = [[100, 100], [200, -100], [300, 100], [400, -100]]                                        # List of targets to use if use_target_coordinates is set to True
+target_list = [[10, 10], [20, -10], [30, 10], [40, -10]]                                        # List of targets to use if use_target_coordinates is set to True
 end_when_last_target_reached = False                                                                    # Ends the simulation when the final target is reached
-moving_target_start = [10, 0]                                                                        # Start point of the moving target if use_moving_target is set to True
-moving_target_increase = [-1.0, 0.0]                                                                    # Movement of the moving target each second
-target_radius = 1                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
+moving_target_start = [0, 0]                                                                        # Start point of the moving target if use_moving_target is set to True
+moving_target_increase = [1, 1]                                                                    # Movement of the moving target each second
+target_radius = 2                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
 store_force_file = False                                                                                # Store the simulated control forces in a .csv file
 circular_target = False                                                                                  # Make the moving target a circle
-enable_live_plot = True                                                                                  # Enables live plotting
+
 
 # When connecting to live otter and using target tracking
 ip = "localhost"
 port = 2009
-start_north = 0                                                                                          # Target north position from referance point
-start_east = 0                                                                                           # Target east position from referance point
-v_north = 2.0                                                                                             # Moving target speed north (m/s)
-v_east = 0.0                                                                                              # Moving target speed east (m/s)
+start_north = 10                                                                                          # Target north position from referance point
+start_east = -20                                                                                           # Target east position from referance point
+v_north = 0.0                                                                                             # Moving target speed north (m/s)
+v_east = 1.0                                                                                              # Moving target speed east (m/s)
 radius = 8                                                                                                # If tracking a circular motion
 v_circle = 1.2                                                                                            # Angular velocity (m/s)
-
+enable_live_plot = True                                                                                  # Enables live plotting
 
 
 #############################################################################################################################################################################################################################################################
@@ -68,13 +68,13 @@ browser = 'chrome'                                                              
 
 
 
-surge_kp = 2.86                                                                                         #
-surge_ki = 0.25                                                                                         # Surge PID controller values
+surge_kp = 5                                                                                         #
+surge_ki = 0.5                                                                                         # Surge PID controller values
 surge_kd = 0                                                                                            #
 
-yaw_kp = 6                                                                                              #
-yaw_ki = 0.6                                                                                            # Yaw PID controller values
-yaw_kd = 0                                                                                              #
+yaw_kp = 18                                                                                              #
+yaw_ki = 3                                                                                            # Yaw PID controller values
+yaw_kd = 0                                                                                             #
 
 
 
@@ -147,7 +147,7 @@ def main(option):
                 atexit.register(exit_handler)
             else:
                 live_guidance.target_tracking(start_north, start_east, v_north, v_east)
-
+                atexit.register(exit_handler)
         elif option == 2:
             if enable_live_plot:
                 _circle_thread.start()
@@ -157,7 +157,7 @@ def main(option):
                 atexit.register(exit_handler)
             else:
                 live_guidance.circular_tracking(start_north, start_east, radius, v_circle)
-
+                atexit.register(exit_handler)
         else:
             print("Error")
 

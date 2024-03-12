@@ -141,6 +141,15 @@ class otter():
     def controller_inputs_torque(self, tau_X, tau_N):
         n1, n2 = self.controlAllocation(tau_X, tau_N)
 
+        ##### Experimental #####
+        if n1 < 0:  #
+            n1 = 1  #
+        if n2 < 0:  # Makes the thursters unable to go in reverse
+            n2 = 1
+
+        self.sorted_values["n1"] = n1
+        self.sorted_values["n2"] = n2
+
         # Use interpolating throttle map or linear throttle map
     #    throttle_left, throttle_right = self.otter_control.radS_to_throttle_linear(n1, n2)
         throttle_left, throttle_right = self.otter_control.radS_to_throttle_interpolation(n1, n2)

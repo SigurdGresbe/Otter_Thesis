@@ -13,8 +13,8 @@ class live_plotter():
 
         self.otter = otter
 
-        self.fig, ax = plt.subplots(2, 2, figsize=(10,8))
-        self.ax1, self.ax2, self.ax3, self.ax4 = ax.flatten()
+        self.fig, ax = plt.subplots(2, 3, figsize=(10,8))
+        self.ax1, self.ax2, self.ax3, self.ax4, self.ax5, self.ax6 = ax.flatten()
 
         self.fig.suptitle("Live data")
 
@@ -53,6 +53,15 @@ class live_plotter():
         self.x42 = "time"
         self.y41 = "distance_to_target"
         self.y42 = "distance_to_target"
+
+        self.xs51 = []
+        self.xs52 = []
+        self.ys51 = []
+        self.ys52 = []
+        self.x51 = "time"
+        self.x52 = "time"
+        self.y51 = "n1"
+        self.y52 = "n2"
 
         self.start_time = 0.0
 
@@ -131,6 +140,24 @@ class live_plotter():
         self.ax4.plot(self.xs41, self.ys41, "w-", label="Distance_to_target")
         self.ax4.plot(self.xs42, self.ys42, "k-", label="Distance_to_target")
         self.ax4.legend()
+
+
+        if self.x51 == "time" and self.x52 == "time":
+            self.xs51.append(float(time.time() - self.start_time))
+            self.xs52 = self.xs51
+
+        else:
+            self.xs51.append(float(self.otter.sorted_values[self.x51]))
+            self.xs52.append(float(self.otter.sorted_values[self.x52]))
+        self.ys51.append(float(self.otter.sorted_values[self.y51]))
+        self.ys52.append(float(self.otter.sorted_values[self.y52]))
+
+        self.ax5.clear()
+        self.ax5.set_xlabel("Time (s)")
+        self.ax5.set_ylabel("Thruster speed (rad/s")
+        self.ax5.plot(self.xs51, self.ys51, "r-", label="Left thruster")
+        self.ax5.plot(self.xs52, self.ys52, "b-", label="Right thruster")
+        self.ax5.legend()
 
 
     def plot(self):

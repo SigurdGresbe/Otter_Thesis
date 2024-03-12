@@ -307,10 +307,15 @@ class otter_simulator():
             # Calculate thruster speeds in rad/s
             n1, n2 = otter.controlAllocation(self.tau_X, self.tau_N)
 
-            #if n1 < 0:
-                #n1 = 0
-            #if n2 < 0:
-                #n2 = 0
+            throttle_left, throttle_right = otter.otter_control.radS_to_throttle_interpolation(n1, n2)  #
+            n1, n2 = otter.otter_control.throttle_to_rads_interpolation(throttle_left, throttle_right)  # This is to drive the throttle signals through interpolation which is the case IRL
+
+
+            if n1 < 0:                                                                                  #
+                n1 = 1                                                                                  #
+            if n2 < 0:                                                                                  # Makes the thursters unable to go in reverse
+                n2 = 1                                                                                  #
+
 
             # Store the speeds in an array
             u_control = np.array([n1, n2])
@@ -334,7 +339,7 @@ class otter_simulator():
                     print(f"Running #{counter}")
 
                 # Stores time taken to reach desired target, used for tuning and debugging
-                if self.distance_to_target < self.surge_setpoint and not finished:
+                if self.distance_to_target < self.surge_setpoint+2 and not finished:
                     reached_target_time = counter * sampleTime
                     finished = True
 
