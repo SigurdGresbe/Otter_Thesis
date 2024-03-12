@@ -30,6 +30,9 @@ class otter_simulator():
 
         self.force_array = np.empty((0, 2), float)
 
+        self.tau_X = 0.0
+        self.tau_N = 0.0
+
 
 
 
@@ -276,28 +279,38 @@ class otter_simulator():
 
 
             angle = eta[5]                                                                                                          # Gets the current heading of the Otter
-            tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle)               # Gets surge control force
-            tau_N = yaw_PID.calculate_yaw(self.yaw_setpoint, angle, self.surge_setpoint, self.distance_to_target)                   # Gets yaw control force
 
-            tau_N = max(min(tau_N, self.max_force), -(self.max_force))      #
-                                                                            #
-            remaining_force = self.max_force - abs(tau_N)                        #
-                                                                            #   Makes sure that the forces are not over saturated and prioritizes yaw movement
-            if tau_X > remaining_force:                                     #
-                tau_X = remaining_force                                     #
-            elif tau_X < -(remaining_force):                                #
-                tau_X = -(remaining_force)                                  #
+            if i % 5 == 0:
+                self.tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle)               # Gets surge control force
+                self.tau_N = yaw_PID.calculate_yaw(self.yaw_setpoint, angle, self.surge_setpoint, self.distance_to_target)                   # Gets yaw control force
+
+            else:
+                self.tau_X = self.tau_X
+                self.tau_N = self.tau_N
+
+            self.tau_N = max(min(self.tau_N, self.max_force), -(self.max_force)) #
+                                                                                 #
+            remaining_force = self.max_force - abs(self.tau_N)                   #
+                                                                                 #   Makes sure that the forces are not over saturated and prioritizes yaw movement
+            if self.tau_X > remaining_force:                                     #
+                self.tau_X = remaining_force                                     #
+            elif self.tau_X < -(remaining_force):                                #
+                self.tau_X = -(remaining_force)                                  #
 
 
-            if self.store_force_file:                                       #
-                forces = np.array([tau_X, tau_N])                           # Stores all the forces in a .csv file
-                self.force_array = np.vstack((self.force_array, forces))    #
-
+            if self.store_force_file:                                            #
+                forces = np.array([self.tau_X, self.tau_N])                      # Stores all the forces in a .csv file
+                self.force_array = np.vstack((self.force_array, forces))         #
 
 
 
             # Calculate thruster speeds in rad/s
-            n1, n2 = otter.controlAllocation(tau_X, tau_N)
+            n1, n2 = otter.controlAllocation(self.tau_X, self.tau_N)
+
+            #if n1 < 0:
+                #n1 = 0
+            #if n2 < 0:
+                #n2 = 0
 
             # Store the speeds in an array
             u_control = np.array([n1, n2])

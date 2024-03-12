@@ -1,6 +1,4 @@
-import Otter_api
 import time
-import numpy as np
 import math
 
 

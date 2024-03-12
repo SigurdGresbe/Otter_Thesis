@@ -5,10 +5,11 @@ import math
 import datetime
 import pandas as pd
 import os
+import Live_plotter
 
 class live_guidance():
 
-    def __init__(self, ip, port, surge_PID, yaw_PID, surge_setpoint):
+    def __init__(self, ip, port, surge_PID, yaw_PID, surge_setpoint, otter):
 
         self.ip = ip
         self.port = port
@@ -16,7 +17,8 @@ class live_guidance():
         self.surge_PID = surge_PID
         self.yaw_PID = yaw_PID
 
-        self.otter = Otter_api.otter()
+
+        self.otter = otter
 
         self.surge_setpoint = surge_setpoint
 
@@ -33,9 +35,12 @@ class live_guidance():
         self.otter_ned_pos = [0, 0]
 
 
+
+
     def target_tracking(self, start_north, start_east, v_north, v_east,):
         self.otter.establish_connection(self.ip, self.port)
         self.otter.update_values()
+
 
         self.referance_point = [self.otter.sorted_values["lat"], self.otter.sorted_values["lon"], 0.0]
         self.otter.observer_coordinates = self.referance_point
@@ -45,12 +50,10 @@ class live_guidance():
         self.log = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
 
 
-        self.otter.controller_inputs_torque(15, 0)
+        self.otter.controller_inputs_torque(10, 0)
         time.sleep(2)
-        self.otter.controller_inputs_torque(15, 0)
-        time.sleep(2)
-        self.otter.controller_inputs_torque(15, 0)
-        time.sleep(2)
+        self.otter.controller_inputs_torque(10, 0)
+        time.sleep(1)
 
 
 
@@ -74,7 +77,8 @@ class live_guidance():
 
                 self.target_ne_pos = [self.target_ne_pos[0] + (v_north/(1/self.cycletime)), self.target_ne_pos[1] + (v_east/(1/self.cycletime))]    # Updates target
 
-
+                self.otter.sorted_values["target_north_from_observer"] = self.target_ne_pos[0]
+                self.otter.sorted_values["target_east_from_observer"] = self.target_ne_pos[1]
 
                 current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
                 temp_df = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
@@ -84,6 +88,7 @@ class live_guidance():
                     self.log.loc[current_datetime] = temp_df.loc[current_datetime]
                 else:
                     self.log = pd.concat([self.log, temp_df])
+
 
 
                 elapsed_time = time.time() - start_time
@@ -106,7 +111,6 @@ class live_guidance():
             time.sleep(10)
 
 
-
     def circular_tracking(self, start_north, start_east, radius, v):
         self.otter.establish_connection(self.ip, self.port)
         self.otter.update_values()
@@ -117,12 +121,10 @@ class live_guidance():
         current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
         self.log = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
 
-        self.otter.controller_inputs_torque(15, 0)
+        self.otter.controller_inputs_torque(10, 0)
         time.sleep(2)
-        self.otter.controller_inputs_torque(15, 0)
-        time.sleep(2)
-        self.otter.controller_inputs_torque(15, 0)
-        time.sleep(2)
+        self.otter.controller_inputs_torque(10, 0)
+        time.sleep(1)
 
         self.function_time = time.time()
 
@@ -146,6 +148,9 @@ class live_guidance():
 
                 self.otter.sorted_values["tau_X"] = tau_X
                 self.otter.sorted_values["tau_N"] = tau_N
+
+                self.otter.sorted_values["target_north_from_observer"] = self.target_ne_pos[0]
+                self.otter.sorted_values["target_east_from_observer"] = self.target_ne_pos[1]
 
                 current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
                 temp_df = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
@@ -207,3 +212,15 @@ class live_guidance():
 
         return tau_X, tau_N
 
+
+    def save_log(self):
+        print("Tracking disabled. Otter is now in drift mode")
+        self.otter.drift()
+
+        logs_dir = 'logs'
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir)
+
+        filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '.csv'
+        file_path = os.path.join(logs_dir, filename)
+        self.log.to_csv(file_path, sep=';')

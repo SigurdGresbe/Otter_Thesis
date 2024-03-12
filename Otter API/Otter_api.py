@@ -2,8 +2,7 @@ import Control
 import Connector
 import time
 import pymap3d as pm
-import math
-import numpy as np
+
 
 #
 #   This is the complete API for the Otter. This can be imported in custom programs and then the functions can be called to communicate with the otter.
@@ -171,7 +170,17 @@ if __name__ == "__main__":
 
   #  otter.set_thrusters(0.3, 1)
   
-    otter.controller_inputs_torque(200, 0)
+    otter.update_values()
+    time.sleep(0.2)
+    otter.update_values()
+    time.sleep(0.2)
+    otter.update_values()
+    time.sleep(0.2)
+    otter.update_values()
+    time.sleep(0.2)
+    otter.update_values()
+    time.sleep(0.2)
+    print("hei")
 
 
 
