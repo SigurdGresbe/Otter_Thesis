@@ -2,6 +2,7 @@ import numpy as np
 from numpy import round, pi
 import math
 from scipy.interpolate import CubicSpline
+import pandas as pd
 
 
 
@@ -60,6 +61,13 @@ class otter_control():
 
         self.thl_neg = False
         self.thr_neg = False
+
+        self.throttledf = pd.read_csv('lib/throttle_map_v2_noneg.csv', index_col=0, sep=";")
+
+        self.throttledf = self.throttledf.dropna(axis=1, how='all')
+
+        # Drop rows where all values are NaN
+        self.throttledf = self.throttledf.dropna(axis=0, how='all')
 
 
 
@@ -248,6 +256,34 @@ class otter_control():
 
         return throttle_left, throttle_right
 
+    def find_closest(self, input_value):
+        # Split the input value into two separate numbers
+        target_x, target_y = map(float, input_value.strip("()").split(';'))
+
+        target_x = (target_x*60)/(2*math.pi)
+        target_y = (target_y * 60) / (2 * math.pi)
+
+        # Initialize variables to keep track of the closest distance and corresponding index
+        closest_distance = float('inf')
+        closest_indices = None
+
+        # Iterate over the DataFrame
+        for column in self.throttledf.columns:
+            for row_index, value in self.throttledf[column].iteritems():
+                if pd.notna(value):
+                    # Split the value in the cell into two numbers
+                    cell_x, cell_y = map(float, value.split(';'))
+                    # Calculate Euclidean distance
+                    distance = np.sqrt((cell_x - target_x) ** 2 + (cell_y - target_y) ** 2)
+
+                    if distance < closest_distance:
+                        closest_distance = distance
+                        closest_indices = (column, row_index)
+                        speed = self.throttledf[f"{float(column):.2f}"][float(row_index)]
+
+
+
+        return closest_indices, speed
 
     # Applies emergency brakes using reverse trusting until the speed of the Otter is below zero
     def EMERGENCY_BRAKES(self, otter_connector):

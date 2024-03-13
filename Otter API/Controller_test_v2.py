@@ -20,6 +20,7 @@ class PIDController:
     def calculate_surge(self, surge_radius, distance_to_target, yaw_setpoint, yaw_measured):
         current_time = time.time()
         sample_time = current_time - self.previous_time if self.previous_time else 0
+        #sample_time = 0.1
         self.previous_time = current_time
 
 
@@ -52,6 +53,7 @@ class PIDController:
     def calculate_yaw(self, setpoint, measured_value, surge_radius, distance_to_target):
         current_time = time.time()
         sample_time = current_time - self.previous_time if self.previous_time else 0
+        #sample_time = 0.1
         self.previous_time = current_time
 
 

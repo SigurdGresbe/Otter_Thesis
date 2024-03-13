@@ -162,6 +162,6 @@ class live_plotter():
 
     def plot(self):
         self.start_time = time.time()
-        ani = animation.FuncAnimation(self.fig, self.animate, interval=100)
+        ani = animation.FuncAnimation(self.fig, self.animate, interval=200)
         plt.show()
 

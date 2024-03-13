@@ -21,23 +21,23 @@ use_target_coordinates = False                                                  
 use_moving_target = True                                                                                # To use moving target instead of target list (path following)
 target_list = [[10, 10], [20, -10], [30, 10], [40, -10]]                                        # List of targets to use if use_target_coordinates is set to True
 end_when_last_target_reached = False                                                                    # Ends the simulation when the final target is reached
-moving_target_start = [0, 0]                                                                        # Start point of the moving target if use_moving_target is set to True
-moving_target_increase = [1, 1]                                                                    # Movement of the moving target each second
-target_radius = 2                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
+moving_target_start = [10, 0]                                                                        # Start point of the moving target if use_moving_target is set to True
+moving_target_increase = [0.4, 0.8]                                                                    # Movement of the moving target each second
+target_radius = 3                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
 store_force_file = False                                                                                # Store the simulated control forces in a .csv file
 circular_target = False                                                                                  # Make the moving target a circle
 
 
 # When connecting to live otter and using target tracking
-ip = "localhost"
+ip = "10.0.5.1"
 port = 2009
-start_north = 10                                                                                          # Target north position from referance point
-start_east = -20                                                                                           # Target east position from referance point
-v_north = 0.0                                                                                             # Moving target speed north (m/s)
-v_east = 1.0                                                                                              # Moving target speed east (m/s)
-radius = 8                                                                                                # If tracking a circular motion
-v_circle = 1.2                                                                                            # Angular velocity (m/s)
+start_north = -5                                                                                          # Target north position from referance point
+start_east = 0                                                                                          # Target east position from referance point
+v_north = 1                                                                                             # Moving target speed north (m/s)
+v_east = 0                                                                                              # Moving target speed east (m/s)
+radius = 20                                                                                                # If tracking a circular motion
+v_circle = 4                                                                                            # Angular velocity (m/s)
 enable_live_plot = True                                                                                  # Enables live plotting
 
 
@@ -70,11 +70,11 @@ browser = 'chrome'                                                              
 
 surge_kp = 5                                                                                         #
 surge_ki = 0.5                                                                                         # Surge PID controller values
-surge_kd = 0                                                                                            #
+surge_kd = 0                                                                                           #
 
-yaw_kp = 18                                                                                              #
-yaw_ki = 3                                                                                            # Yaw PID controller values
-yaw_kd = 0                                                                                             #
+yaw_kp = 37                                                                                              #
+yaw_ki = 4                                                                                            # Yaw PID controller values
+yaw_kd = 10                                                                                             #
 
 
 

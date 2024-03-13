@@ -2,6 +2,8 @@ import numpy as np
 import math
 from lib.gnc import Smtrx, Hmtrx, Rzyx, m2c, crossFlowDrag, sat, attitudeEuler
 import time
+import pandas as pd
+
 
 class otter_simulator():
 
@@ -34,6 +36,10 @@ class otter_simulator():
         self.tau_N = 0.0
 
 
+        self.throttledf = pd.read_csv('lib/throttle_map_v2_noneg.csv', index_col=0, sep=";")
+        self.throttledf = self.throttledf.dropna(axis=1, how='all')
+        # Drop rows where all values are NaN
+        self.throttledf = self.throttledf.dropna(axis=0, how='all')
 
 
 
@@ -60,7 +66,7 @@ class otter_simulator():
 
         # Vehicle parameters
         m = 55.0                                 # mass (kg)
-        self.mp = 10.0                           # Payload (kg)
+        self.mp = 15.0                           # Payload (kg)
         self.m_total = m + self.mp
         self.rp = np.array([0.05, 0, -0.35], float) # location of payload (m)
         rg = np.array([0.2, 0, -0.2], float)     # CG for hull only (m)
@@ -251,7 +257,8 @@ class otter_simulator():
                         if counter >= 15000 and counter < 25000:                                                                #
                             self.moving_target[0] = self.moving_target[0] + self.moving_target_increase[0]                      #
                             self.moving_target[1] = self.moving_target[1] - self.moving_target_increase[1]                      #
-                                                                                                                                #
+                            #self.moving_target[1] = self.moving_target[1]                                                       #
+                            #self.moving_target[0] = self.moving_target[0]                                                       #
                         elif counter >= 25000 and counter < 35000:                                                              #
                             self.moving_target[0] = self.moving_target[0] - self.moving_target_increase[0]/4                    #
                             self.moving_target[1] = self.moving_target[1] - self.moving_target_increase[1]/4                    #
@@ -281,7 +288,7 @@ class otter_simulator():
             angle = eta[5]                                                                                                          # Gets the current heading of the Otter
 
             if i % 5 == 0:
-                self.tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle)               # Gets surge control force
+                self.tau_X = surge_PID.calculate_surge(self.surge_setpoint, self.distance_to_target, self.yaw_setpoint, angle)               # Gets surge control force      every 0.1s
                 self.tau_N = yaw_PID.calculate_yaw(self.yaw_setpoint, angle, self.surge_setpoint, self.distance_to_target)                   # Gets yaw control force
 
             else:
@@ -305,20 +312,35 @@ class otter_simulator():
 
 
             # Calculate thruster speeds in rad/s
-            n1, n2 = otter.controlAllocation(self.tau_X, self.tau_N)
+            if self.tau_N < 0:
+                n1, n2 = otter.controlAllocation(self.tau_X, self.tau_N * -1)
+                self.tau_N_neg = True
+            else:
+                n1, n2 = otter.controlAllocation(self.tau_X, self.tau_N)
+                self.tau_N_neg = False
 
-            throttle_left, throttle_right = otter.otter_control.radS_to_throttle_interpolation(n1, n2)  #
-            n1, n2 = otter.otter_control.throttle_to_rads_interpolation(throttle_left, throttle_right)  # This is to drive the throttle signals through interpolation which is the case IRL
+            #throttle_left, throttle_right = otter.otter_control.radS_to_throttle_interpolation(n1, n2)  #
+            #n1, n2 = otter.otter_control.throttle_to_rads_interpolation(throttle_left, throttle_right)  # This is to drive the throttle signals through interpolation which is the case IRL
 
 
             if n1 < 0:                                                                                  #
-                n1 = 1                                                                                  #
+                n1 = 0.1                                                                                  #
             if n2 < 0:                                                                                  # Makes the thursters unable to go in reverse
-                n2 = 1                                                                                  #
+                n2 = 0.1                                                                                  #
+
+            otter_torques, speed = otter.otter_control.find_closest(f"{n1};{n2}")
+            n1, n2 = map(float, speed.strip("()").split(';'))
+
+            if self.tau_N_neg:
+                n1_calc = ((n2 * 2 * math.pi) / 60)
+                n2_calc = ((n1 * 2 * math.pi) / 60)
+            else:
+                n1_calc = ((n1 * 2 * math.pi) / 60)
+                n2_calc = ((n2 * 2 * math.pi) / 60)
 
 
             # Store the speeds in an array
-            u_control = np.array([n1, n2])
+            u_control = np.array([n1_calc, n2_calc])
 
 
             # Store simulation data in simData
@@ -458,3 +480,26 @@ class otter_simulator():
         u_actual = np.array(n, float)
 
         return nu, u_actual
+
+    def find_closest(self, input_value):
+        # Split the input value into two separate numbers
+        target_x, target_y = map(float, input_value.strip("()").split(';'))
+
+        # Initialize variables to keep track of the closest distance and corresponding index
+        closest_distance = float('inf')
+        closest_indices = None
+
+        # Iterate over the DataFrame
+        for column in self.throttledf.columns:
+            for row_index, value in self.throttledf[column].iteritems():
+                if pd.notna(value):
+                    # Split the value in the cell into two numbers
+                    cell_x, cell_y = map(float, value.split(';'))
+                    # Calculate Euclidean distance
+                    distance = np.sqrt((cell_x - target_x) ** 2 + (cell_y - target_y) ** 2)
+
+                    if distance < closest_distance:
+                        closest_distance = distance
+                        closest_indices = (column, row_index)
+
+        return closest_indices

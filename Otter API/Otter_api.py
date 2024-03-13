@@ -2,6 +2,7 @@ import Control
 import Connector
 import time
 import pymap3d as pm
+import math
 
 
 #
@@ -31,6 +32,8 @@ class otter():
 
         # Variables and lists
         self.geo2ned_from_observer = [0.0, 0.0, 0.0]
+
+        self.tau_N_neg = False
 
 
     # Tries to establish connection to the otter. Default values are in place for testing on a local machine with a test server. Returns boolean
@@ -139,22 +142,41 @@ class otter():
     # Takes inputs from signals in the form of tau_X (surge) and tau_N (yaw) in N, converts it using control allocation
     # and turns the engines the desired speeds.
     def controller_inputs_torque(self, tau_X, tau_N):
-        n1, n2 = self.controlAllocation(tau_X, tau_N)
+        if tau_N < 0:
+            n1, n2 = self.controlAllocation(tau_X, tau_N*-1)
+            self.tau_N_neg = True
+        else:
+            n1, n2 = self.controlAllocation(tau_X, tau_N)
+            self.tau_N_neg = False
 
         ##### Experimental #####
         if n1 < 0:  #
-            n1 = 1  #
+            n1 = 0.1  #
         if n2 < 0:  # Makes the thursters unable to go in reverse
-            n2 = 1
+            n2 = 0.1
 
-        self.sorted_values["n1"] = n1
-        self.sorted_values["n2"] = n2
+
+        if self.tau_N_neg:
+            self.sorted_values["n1"] = n2
+            self.sorted_values["n2"] = n1
+        else:
+            self.sorted_values["n1"] = n1
+            self.sorted_values["n2"] = n2
+
+        otter_torques, speed = self.otter_control.find_closest(f"{n1};{n2}")
 
         # Use interpolating throttle map or linear throttle map
     #    throttle_left, throttle_right = self.otter_control.radS_to_throttle_linear(n1, n2)
-        throttle_left, throttle_right = self.otter_control.radS_to_throttle_interpolation(n1, n2)
+        #throttle_left, throttle_right = self.otter_control.radS_to_throttle_interpolation(n1, n2)           #
+        #return self.set_thrusters(throttle_left, throttle_right)                                            #  For interpolating throttle map
 
-        return self.set_thrusters(throttle_left, throttle_right)
+        torque_x = otter_torques[0]
+        torque_z = otter_torques[1]
+
+        if self.tau_N_neg:
+            torque_z = torque_z * -1
+
+        return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
 
 
@@ -166,7 +188,7 @@ if __name__ == "__main__":
 
 
     # Establishes a socket connection to the Otter with IP and the PORT'
-    otter.establish_connection("192.168.53.2", 2009)
+    otter.establish_connection("10.0.5.1", 2009)
 
 
     # Write test commands under here:
@@ -178,18 +200,7 @@ if __name__ == "__main__":
 #    otter.close_connection()
 
   #  otter.set_thrusters(0.3, 1)
-  
-    otter.update_values()
-    time.sleep(0.2)
-    otter.update_values()
-    time.sleep(0.2)
-    otter.update_values()
-    time.sleep(0.2)
-    otter.update_values()
-    time.sleep(0.2)
-    otter.update_values()
-    time.sleep(0.2)
-    print("hei")
+    otter.controller_inputs_torque(150, 0)
 
 
 
