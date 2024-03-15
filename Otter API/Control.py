@@ -3,6 +3,8 @@ from numpy import round, pi
 import math
 from scipy.interpolate import CubicSpline
 import pandas as pd
+from scipy.spatial import cKDTree
+from scipy.interpolate import griddata
 
 
 
@@ -68,6 +70,9 @@ class otter_control():
 
         # Drop rows where all values are NaN
         self.throttledf = self.throttledf.dropna(axis=0, how='all')
+
+        self.rpm_left, self.rpm_right, self.force_x, self.force_z = self.load_and_prepare_data("lib/throttle_map_v2_noneg.csv")
+        self.tree = cKDTree(np.vstack((self.rpm_left, self.rpm_right)).T)
 
 
 
@@ -256,24 +261,23 @@ class otter_control():
 
         return throttle_left, throttle_right
 
+
+    # Finds the closest throttle values from the inputet rpm's in the throttle map
     def find_closest(self, input_value):
-        # Split the input value into two separate numbers
+
         target_x, target_y = map(float, input_value.strip("()").split(';'))
 
         target_x = (target_x*60)/(2*math.pi)
         target_y = (target_y * 60) / (2 * math.pi)
 
-        # Initialize variables to keep track of the closest distance and corresponding index
+
         closest_distance = float('inf')
         closest_indices = None
 
-        # Iterate over the DataFrame
         for column in self.throttledf.columns:
-            for row_index, value in self.throttledf[column].iteritems():
+            for row_index, value in self.throttledf[column].items():
                 if pd.notna(value):
-                    # Split the value in the cell into two numbers
                     cell_x, cell_y = map(float, value.split(';'))
-                    # Calculate Euclidean distance
                     distance = np.sqrt((cell_x - target_x) ** 2 + (cell_y - target_y) ** 2)
 
                     if distance < closest_distance:
@@ -284,6 +288,43 @@ class otter_control():
 
 
         return closest_indices, speed
+
+    # Loads and prepares data for interpolating throttle 2D throttle map
+    def load_and_prepare_data(self, csv_file_path):
+        df = pd.read_csv(csv_file_path, delimiter=';', quotechar='"', index_col=0)
+        force_x, force_z = np.meshgrid(df.index.astype(float), df.columns.astype(float), indexing='ij')
+
+        rpm_left = []
+        rpm_right = []
+        for i, row in enumerate(df.itertuples(index=False)):
+            for j, cell in enumerate(row):
+                if pd.notna(cell):
+                    l_rpm, r_rpm = map(float, cell.split(';'))
+                    rpm_left.append(l_rpm)
+                    rpm_right.append(r_rpm)
+
+        return np.array(rpm_left), np.array(rpm_right), force_x.ravel(), force_z.ravel()
+
+    # Interpolates throttle values in 2D using the throttle map. Adjust k value for how many "neighboring" values to look at for interpolation
+    def interpolate_force_values(self, rpm_left, rpm_right, k=3):
+        rpm_left = (rpm_left * 60) / (2 * math.pi)
+        rpm_right = (rpm_right * 60) / (2 * math.pi)
+        distances, indices = self.tree.query([(rpm_left, rpm_right)], k=k)
+        weights = 1 / (distances[0] + 1e-10)
+        normalized_weights = weights / np.sum(weights)
+
+        force_x_interp = np.sum(normalized_weights * self.force_x[indices[0]])
+        force_z_interp = np.sum(normalized_weights * self.force_z[indices[0]]),
+
+
+        interpolated_rpm_left = np.sum(normalized_weights * self.rpm_left[indices[0]])
+        interpolated_rpm_right = np.sum(normalized_weights * self.rpm_right[indices[0]])
+
+        speed = [(interpolated_rpm_left*2*math.pi)/60, (interpolated_rpm_right*2*math.pi)/60]
+
+        return force_x_interp, force_z_interp, speed
+
+
 
     # Applies emergency brakes using reverse trusting until the speed of the Otter is below zero
     def EMERGENCY_BRAKES(self, otter_connector):

@@ -142,6 +142,8 @@ class otter():
     # Takes inputs from signals in the form of tau_X (surge) and tau_N (yaw) in N, converts it using control allocation
     # and turns the engines the desired speeds.
     def controller_inputs_torque(self, tau_X, tau_N):
+
+        # Inverst the yaw if it is negative because of the throttle map
         if tau_N < 0:
             n1, n2 = self.controlAllocation(tau_X, tau_N*-1)
             self.tau_N_neg = True
@@ -163,18 +165,20 @@ class otter():
             self.sorted_values["n1"] = n1
             self.sorted_values["n2"] = n2
 
-        otter_torques, speed = self.otter_control.find_closest(f"{n1};{n2}")
+        #otter_torques, speed = self.otter_control.find_closest(f"{n1};{n2}")
+        #torque_x = otter_torques[0]
+        #torque_z = otter_torques[1]
 
         # Use interpolating throttle map or linear throttle map
     #    throttle_left, throttle_right = self.otter_control.radS_to_throttle_linear(n1, n2)
         #throttle_left, throttle_right = self.otter_control.radS_to_throttle_interpolation(n1, n2)           #
         #return self.set_thrusters(throttle_left, throttle_right)                                            #  For interpolating throttle map
 
-        torque_x = otter_torques[0]
-        torque_z = otter_torques[1]
+        torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n1, n2, 3)
 
         if self.tau_N_neg:
             torque_z = torque_z * -1
+
 
         return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
@@ -188,7 +192,7 @@ if __name__ == "__main__":
 
 
     # Establishes a socket connection to the Otter with IP and the PORT'
-    otter.establish_connection("10.0.5.1", 2009)
+   # otter.establish_connection("10.0.5.1", 2009)
 
 
     # Write test commands under here:

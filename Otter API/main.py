@@ -74,7 +74,7 @@ surge_kd = 0                                                                    
 
 yaw_kp = 37                                                                                              #
 yaw_ki = 4                                                                                            # Yaw PID controller values
-yaw_kd = 10                                                                                             #
+yaw_kd = 5                                                                                             #
 
 
 

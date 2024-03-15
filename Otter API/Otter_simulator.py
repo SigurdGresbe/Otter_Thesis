@@ -328,15 +328,23 @@ class otter_simulator():
             if n2 < 0:                                                                                  # Makes the thursters unable to go in reverse
                 n2 = 0.1                                                                                  #
 
-            otter_torques, speed = otter.otter_control.find_closest(f"{n1};{n2}")
-            n1, n2 = map(float, speed.strip("()").split(';'))
+           # otter_torques, speed = otter.otter_control.find_closest(f"{n1};{n2}")                              #
+           # n1, n2 = map(float, speed.strip("()").split(';'))                                                  #   2D throttle map, no interpolation
+
+
+            torque_z, torque_x, speed = otter.otter_control.interpolate_force_values(n1, n2, 3)                 #   2D interpolation
+
+            # Uncomment to use interpolated RPM's in simulator
+            #n1 = speed[0]                                                                                       #
+            #n2 = speed[1]                                                                                       #
 
             if self.tau_N_neg:
-                n1_calc = ((n2 * 2 * math.pi) / 60)
-                n2_calc = ((n1 * 2 * math.pi) / 60)
+                n1_calc = n2
+                n2_calc = n1
             else:
-                n1_calc = ((n1 * 2 * math.pi) / 60)
-                n2_calc = ((n2 * 2 * math.pi) / 60)
+                n1_calc = n1
+                n2_calc = n2
+
 
 
             # Store the speeds in an array
@@ -481,25 +489,3 @@ class otter_simulator():
 
         return nu, u_actual
 
-    def find_closest(self, input_value):
-        # Split the input value into two separate numbers
-        target_x, target_y = map(float, input_value.strip("()").split(';'))
-
-        # Initialize variables to keep track of the closest distance and corresponding index
-        closest_distance = float('inf')
-        closest_indices = None
-
-        # Iterate over the DataFrame
-        for column in self.throttledf.columns:
-            for row_index, value in self.throttledf[column].iteritems():
-                if pd.notna(value):
-                    # Split the value in the cell into two numbers
-                    cell_x, cell_y = map(float, value.split(';'))
-                    # Calculate Euclidean distance
-                    distance = np.sqrt((cell_x - target_x) ** 2 + (cell_y - target_y) ** 2)
-
-                    if distance < closest_distance:
-                        closest_distance = distance
-                        closest_indices = (column, row_index)
-
-        return closest_indices

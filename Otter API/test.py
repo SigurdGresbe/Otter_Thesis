@@ -1,49 +1,46 @@
 import pandas as pd
 import numpy as np
+from scipy.spatial import cKDTree
+from scipy.interpolate import griddata
 
 
-def find_closest(df, input_value):
-    # Split the input value into two separate numbers
-    target_x, target_y = map(int, input_value.strip("()").split(';'))
+class RPMToForceInterpolator:
+    def __init__(self, csv_file_path):
+        self.rpm_left, self.rpm_right, self.force_x, self.force_z = self.load_and_prepare_data(csv_file_path)
+        self.tree = cKDTree(np.vstack((self.rpm_left, self.rpm_right)).T)
 
-    # Initialize variables to keep track of the closest distance and corresponding index
-    closest_distance = float('inf')
-    closest_indices = None
+    def load_and_prepare_data(self, csv_file_path):
+        df = pd.read_csv(csv_file_path, delimiter=';', quotechar='"', index_col=0)
+        force_x, force_z = np.meshgrid(df.index.astype(float), df.columns.astype(float), indexing='ij')
 
-    # Iterate over the DataFrame
-    for column in df.columns:
-        for row_index, value in df[column].iteritems():
-            if pd.notna(value):
-                # Split the value in the cell into two numbers
-                cell_x, cell_y = map(int, value.split(';'))
-                # Calculate Euclidean distance
-                distance = np.sqrt((cell_x - target_x) ** 2 + (cell_y - target_y) ** 2)
+        rpm_left = []
+        rpm_right = []
+        for i, row in enumerate(df.itertuples(index=False)):
+            for j, cell in enumerate(row):
+                if pd.notna(cell):
+                    l_rpm, r_rpm = map(float, cell.split(';'))
+                    rpm_left.append(l_rpm)
+                    rpm_right.append(r_rpm)
 
-                if distance < closest_distance:
-                    closest_distance = distance
-                    closest_indices = (row_index, column)
+        return np.array(rpm_left), np.array(rpm_right), force_x.ravel(), force_z.ravel()
 
-    return closest_indices
+    def interpolate_force_values(self, rpm_left, rpm_right, k=3):
+        distances, indices = self.tree.query([(rpm_left, rpm_right)], k=k)
+        weights = 1 / (distances[0] + 1e-10)  # Prevent division by zero
+        normalized_weights = weights / np.sum(weights)
+
+        force_x_interp = np.sum(normalized_weights * self.force_x[indices[0]])
+        force_z_interp = np.sum(normalized_weights * self.force_z[indices[0]])
+
+        return force_x_interp, force_z_interp
 
 
-df = pd.read_csv('lib/throttle_map_v2_noneg.csv', index_col=0, sep=";")
-df = df.dropna(axis=1, how='all')
+# Usage example
+csv_file_path = "lib/throttle_map_v2_noneg.csv"  # Adjust this path to where your CSV file is located
+interpolator = RPMToForceInterpolator(csv_file_path)
 
-# Drop rows where all values are NaN
-df = df.dropna(axis=0, how='all')
+# Input RPM values for an example
+example_rpm = (250, 100)  # Example RPM pair for interpolation
+force_z_interp, force_x_interp = interpolator.interpolate_force_values(*example_rpm)
 
-print(df)
-
-# Input value for which you want to find the closest
-input_value = "(700;350)"
-
-# Find the closest value's indices
-closest_indices = find_closest(df, input_value)
-
-if closest_indices:
-    print(f"The closest value is at row {closest_indices[0]} and column {closest_indices[1]}")
-else:
-    print("No closest value found.")
-
-row_index = "0.6"
-print(df[f"{float(row_index):.2f}"][0.05])
+print(f"Interpolated force values for RPM {example_rpm}: Force_x = {force_x_interp}, Force_z = {force_z_interp}")
