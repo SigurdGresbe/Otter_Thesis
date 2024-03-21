@@ -309,12 +309,17 @@ class otter_control():
     def interpolate_force_values(self, rpm_left, rpm_right, k=3):
         rpm_left = (rpm_left * 60) / (2 * math.pi)
         rpm_right = (rpm_right * 60) / (2 * math.pi)
-        distances, indices = self.tree.query([(rpm_left, rpm_right)], k=k)
+
+
+
+        distances, indices = self.tree.query([(rpm_left, rpm_right)], k)
         weights = 1 / (distances[0] + 1e-10)
         normalized_weights = weights / np.sum(weights)
 
         force_x_interp = np.sum(normalized_weights * self.force_x[indices[0]])
-        force_z_interp = np.sum(normalized_weights * self.force_z[indices[0]]),
+        force_z_interp = np.sum(normalized_weights * self.force_z[indices[0]])
+
+
 
 
         interpolated_rpm_left = np.sum(normalized_weights * self.rpm_left[indices[0]])

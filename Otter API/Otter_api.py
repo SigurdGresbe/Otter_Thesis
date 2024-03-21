@@ -157,13 +157,12 @@ class otter():
         if n2 < 0:  # Makes the thursters unable to go in reverse
             n2 = 0.1
 
-
         if self.tau_N_neg:
-            self.sorted_values["n1"] = n2
-            self.sorted_values["n2"] = n1
+            self.sorted_values["n1"] = (n2*60) /(2*math.pi)
+            self.sorted_values["n2"] = (n1*60) /(2*math.pi)
         else:
-            self.sorted_values["n1"] = n1
-            self.sorted_values["n2"] = n2
+            self.sorted_values["n1"] = (n1*60) /(2*math.pi)
+            self.sorted_values["n2"] = (n2*60) /(2*math.pi)
 
         #otter_torques, speed = self.otter_control.find_closest(f"{n1};{n2}")
         #torque_x = otter_torques[0]
@@ -174,7 +173,12 @@ class otter():
         #throttle_left, throttle_right = self.otter_control.radS_to_throttle_interpolation(n1, n2)           #
         #return self.set_thrusters(throttle_left, throttle_right)                                            #  For interpolating throttle map
 
+
+
         torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n1, n2, 3)
+
+        if torque_z < 0.05:
+            torque_z = 0.0
 
         if self.tau_N_neg:
             torque_z = torque_z * -1
@@ -192,7 +196,7 @@ if __name__ == "__main__":
 
 
     # Establishes a socket connection to the Otter with IP and the PORT'
-   # otter.establish_connection("10.0.5.1", 2009)
+    otter.establish_connection("10.147.20.207", 2009)
 
 
     # Write test commands under here:
@@ -201,7 +205,6 @@ if __name__ == "__main__":
   #  otter.update_values()
 
   #  time.sleep(5)
-#    otter.close_connection()
 
   #  otter.set_thrusters(0.3, 1)
     otter.controller_inputs_torque(150, 0)
