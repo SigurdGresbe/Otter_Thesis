@@ -15,7 +15,7 @@ import time
 ##########################################################################################################################################################
 
 
-N = 65000                                                                                               # Number of simulation samples
+N = 35000                                                                                               # Number of simulation samples
 sampleTime = 0.02                                                                                       # Simulation time per sample. Usually at 0.02, other values could cause instabillity in the simulation
 use_target_coordinates = False                                                                          # To use coordinates as a target or to use a linear path
 use_moving_target = True                                                                                # To use moving target instead of target list (path following)
@@ -26,13 +26,13 @@ moving_target_increase = [0.4, 0.8]                                             
 target_radius = 3                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
 store_force_file = False                                                                                # Store the simulated control forces in a .csv file
-circular_target = False                                                                                  # Make the moving target a circle
+circular_target = True                                                                                  # Make the moving target a circle
 
 
 # When connecting to live otter and using target tracking
-ip = "10.0.5.1"
+ip = "10.147.20.207"
 port = 2009
-start_north = 0                                                                                          # Target north position from referance point
+start_north = 4                                                                                          # Target north position from referance point
 start_east = 0                                                                                          # Target east position from referance point
 v_north = 0                                                                                             # Moving target speed north (m/s)
 v_east = 0                                                                                              # Moving target speed east (m/s)
@@ -68,8 +68,8 @@ browser = 'chrome'                                                              
 
 
 
-surge_kp = 5                                                                                         #
-surge_ki = 0.5                                                                                         # Surge PID controller values
+surge_kp = 12                                                                                         #
+surge_ki = 0.7                                                                                         # Surge PID controller values
 surge_kd = 0                                                                                           #
 
 yaw_kp = 37                                                                                              #

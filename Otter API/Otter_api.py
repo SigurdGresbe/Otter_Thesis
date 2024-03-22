@@ -36,6 +36,7 @@ class otter():
         self.tau_N_neg = False
 
 
+
     # Tries to establish connection to the otter. Default values are in place for testing on a local machine with a test server. Returns boolean
     def establish_connection(self, ip, port):
         return self.otter_connector.establish_connection(ip, port)
@@ -141,7 +142,7 @@ class otter():
 
     # Takes inputs from signals in the form of tau_X (surge) and tau_N (yaw) in N, converts it using control allocation
     # and turns the engines the desired speeds.
-    def controller_inputs_torque(self, tau_X, tau_N):
+    def controller_inputs_torque(self, tau_X, tau_N, surge_setpoint=3):
 
         # Inverst the yaw if it is negative because of the throttle map
         if tau_N < 0:
@@ -183,8 +184,13 @@ class otter():
         if self.tau_N_neg:
             torque_z = torque_z * -1
 
+        # Uncomment this if running on linux. Scipy 2D interpolate has some bugs on linux........
+        if "distance_to_target" in self.sorted_values:
+            if self.sorted_values["distance_to_target"] < surge_setpoint:
+                torque_x = 0
+                torque_z = 0
 
-        return self.set_manual_control_mode(torque_x, 0.0, torque_z)
+            return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
 
 

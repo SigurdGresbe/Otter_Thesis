@@ -202,6 +202,8 @@ class otter_simulator():
         self.target_counter = 0
         self.target_coordinates = self.target_list[self.target_counter]
 
+        dist_tot = 0
+
 
         # Main simulation loop
         i = 0
@@ -279,8 +281,9 @@ class otter_simulator():
                     omega = 1.5 / 50
                     asd = asd + sampleTime
                     theta = omega * asd
-                    self.moving_target[0] = 100 + 50 * np.cos(theta)
-                    self.moving_target[1] = 100 + 50 * np.sin(theta)
+                    self.moving_target[0] = -15 + 20 * np.cos(theta)
+                    self.moving_target[1] = 0 + 20 * np.sin(theta)
+                    dist_tot = dist_tot + self.distance_to_target
 
 
 
@@ -385,6 +388,7 @@ class otter_simulator():
             i = i + 1
 
 
+        print(f"AVG distance to target = {dist_tot/i}")
 
         simTime = np.arange(start=0, stop=t+sampleTime, step=sampleTime)[:, None]
         targetData = self.targetData

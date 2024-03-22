@@ -63,7 +63,7 @@ class live_guidance():
                 start_time = time.time()
 
                 tau_X, tau_N = self.calculate_forces()
-                self.otter.controller_inputs_torque(tau_X, tau_N)
+                self.otter.controller_inputs_torque(tau_X, tau_N, self.surge_setpoint)
 
                 self.otter.sorted_values["north_error"] = self.north_error
                 self.otter.sorted_values["east_error"] = self.east_error
@@ -138,7 +138,7 @@ class live_guidance():
                 self.target_ne_pos = [start_north + radius * np.cos(theta), start_east + radius * np.sin(theta)]
 
                 tau_X, tau_N = self.calculate_forces()
-                self.otter.controller_inputs_torque(tau_X, tau_N)
+                self.otter.controller_inputs_torque(tau_X, tau_N, self.surge_setpoint)
 
                 self.otter.sorted_values["north_error"] = self.north_error
                 self.otter.sorted_values["east_error"] = self.east_error
