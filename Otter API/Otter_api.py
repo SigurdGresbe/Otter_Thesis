@@ -1,5 +1,5 @@
-import Control
-import Connector
+import lib.Control as Control
+import lib.Connector as Connector
 import time
 import pymap3d as pm
 import math
@@ -13,7 +13,6 @@ class otter():
 
     def __init__(self):
 
-        print("")
         self.verbose = True
 
         # Creates instances of the connector and control classes
@@ -144,7 +143,7 @@ class otter():
     # and turns the engines the desired speeds.
     def controller_inputs_torque(self, tau_X, tau_N, surge_setpoint=3):
 
-        # Inverst the yaw if it is negative because of the throttle map
+        # Inverses the yaw if it is negative because of the throttle map
         if tau_N < 0:
             n1, n2 = self.controlAllocation(tau_X, tau_N*-1)
             self.tau_N_neg = True
@@ -172,7 +171,7 @@ class otter():
         # Use interpolating throttle map or linear throttle map
     #    throttle_left, throttle_right = self.otter_control.radS_to_throttle_linear(n1, n2)
         #throttle_left, throttle_right = self.otter_control.radS_to_throttle_interpolation(n1, n2)           #
-        #return self.set_thrusters(throttle_left, throttle_right)                                            #  For interpolating throttle map
+        #return self.set_thrusters(throttle_left, throttle_right)                                            #  For interpolating 1D throttle map
 
 
 

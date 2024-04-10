@@ -1,7 +1,6 @@
 import numpy as np
 import math
 from lib.gnc import Smtrx, Hmtrx, Rzyx, m2c, crossFlowDrag, sat, attitudeEuler
-import time
 import pandas as pd
 
 
@@ -65,8 +64,8 @@ class otter_simulator():
         self.dimU = len(self.controls)
 
         # Vehicle parameters
-        m = 55.0                                 # mass (kg)
-        self.mp = 15.0                           # Payload (kg)
+        m = 62.0                                 # mass (kg)
+        self.mp = 0.0                           # Payload (kg)
         self.m_total = m + self.mp
         self.rp = np.array([0.05, 0, -0.35], float) # location of payload (m)
         rg = np.array([0.2, 0, -0.2], float)     # CG for hull only (m)
@@ -313,7 +312,6 @@ class otter_simulator():
                 self.force_array = np.vstack((self.force_array, forces))         #
 
 
-
             # Calculate thruster speeds in rad/s
             if self.tau_N < 0:
                 n1, n2 = otter.controlAllocation(self.tau_X, self.tau_N * -1)
@@ -326,10 +324,10 @@ class otter_simulator():
             #n1, n2 = otter.otter_control.throttle_to_rads_interpolation(throttle_left, throttle_right)  # This is to drive the throttle signals through interpolation which is the case IRL
 
 
-            if n1 < 0:                                                                                  #
-                n1 = 0.1                                                                                  #
-            if n2 < 0:                                                                                  # Makes the thursters unable to go in reverse
-                n2 = 0.1                                                                                  #
+            if n1 < 0:                                                                                          #
+                n1 = 0.1                                                                                        #
+            if n2 < 0:                                                                                          # Makes the thursters unable to go in reverse
+                n2 = 0.1                                                                                        #
 
            # otter_torques, speed = otter.otter_control.find_closest(f"{n1};{n2}")                              #
            # n1, n2 = map(float, speed.strip("()").split(';'))                                                  #   2D throttle map, no interpolation
@@ -347,6 +345,7 @@ class otter_simulator():
             else:
                 n1_calc = n1
                 n2_calc = n2
+
 
 
 
