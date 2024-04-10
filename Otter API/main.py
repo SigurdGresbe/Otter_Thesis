@@ -32,7 +32,7 @@ circular_target = False                                                         
 # When connecting to live otter and using target tracking
 ip = "localhost"
 port = 2009
-start_north = 4                                                                                          # Target north position from referance point
+start_north = 0                                                                                          # Target north position from referance point
 start_east = 0                                                                                          # Target east position from referance point
 v_north = 0                                                                                             # Moving target speed north (m/s)
 v_east = 0                                                                                              # Moving target speed east (m/s)
@@ -68,20 +68,20 @@ browser = 'chrome'                                                              
 
 
 
-surge_kp = 9.8299                                                                                           #
-surge_ki = 0.37                                                                                             # Surge PID controller values
+surge_kp = 12                                                                                               #
+surge_ki = 0.7                                                                                              # Surge PID controller values
 surge_kd = 0.0                                                                                              #
 
-yaw_kp = 9.62                                                                                               #
-yaw_ki = 0.36                                                                                               # Yaw PID controller values, calculated using pole placement
-yaw_kd = 8.12                                                                                               #
+yaw_kp = 37                                                                                                 #
+yaw_ki = 4                                                                                                  # Yaw PID controller values
+yaw_kd = 0.0                                                                                                #
 
 
 
 surge_PID = PID_Controller_test_v2.PIDController(surge_kp, surge_ki, surge_kd)                                  # Surge PID object
 yaw_PID = PID_Controller_test_v2.PIDController(yaw_kp, yaw_ki, yaw_kd)                                          # Yaw PID object
 
-live_guidance = Live_guidance.live_guidance(ip, port, surge_PID, yaw_PID, target_radius, otter)             # Live guidance object
+live_guidance = Live_guidance.live_guidance(ip, port, surge_PID, yaw_PID, target_radius, otter)                 # Live guidance object
 
 
 
