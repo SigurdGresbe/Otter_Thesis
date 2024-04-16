@@ -2,6 +2,7 @@ import numpy as np
 import math
 from lib.gnc import Smtrx, Hmtrx, Rzyx, m2c, crossFlowDrag, sat, attitudeEuler
 import pandas as pd
+from numba import jit, cuda
 
 
 class otter_simulator():
@@ -166,7 +167,6 @@ class otter_simulator():
         self.D = -np.diag([Xu, Yv, Zw, Kp, Mq, Nr])
 
         self.mass = m + self.mp
-
 
 
     def simulate(self, N, sampleTime, otter, surge_PID, yaw_PID):

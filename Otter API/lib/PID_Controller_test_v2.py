@@ -12,7 +12,7 @@ class PIDController:
         self.previous_time = None
 
 
-        self.integrator_limits = [0, 15]     # Limits the integrator in both regulators
+        self.integrator_limits = [0, 10]     # Limits the integrator in both regulators
 
         self.previous_distance = None
 
@@ -59,12 +59,16 @@ class PIDController:
 
         error = (setpoint - measured_value + math.pi) % (2 * math.pi) - math.pi
 
-        if ((distance_to_target - (surge_radius + 2)) < 0):
-            self.integral = 0                                           # Resets the integral when the target is reached. Probably is a better method than this.
+        #if ((distance_to_target - (surge_radius + 2)) < 0):
+         #   self.integral = 0                                           # Resets the integral when the target is reached. Probably is a better method than this.
+          #  error = 0
+
+        if error < 0.017 and error > -0.017:
+            self.integral = 0                                            # Resets the integral when the target is reached. Probably is a better method than this.
             error = 0
 
         self.integral += error * sample_time if sample_time > 0 else 0
-        self.integral = max(min(self.integral, self.integrator_limits[1]*3), self.integrator_limits[0])
+        self.integral = max(min(self.integral, self.integrator_limits[1]*4), self.integrator_limits[0])
         derivative = (error - self.previous_error) / sample_time if sample_time > 0 else 0
         self.previous_error = error
 

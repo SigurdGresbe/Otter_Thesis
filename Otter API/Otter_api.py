@@ -201,7 +201,7 @@ if __name__ == "__main__":
 
 
     # Establishes a socket connection to the Otter with IP and the PORT'
-    otter.establish_connection("10.147.20.207", 2009)
+    otter.establish_connection("10.0.5.1", 2009)
 
 
     # Write test commands under here:
@@ -212,13 +212,18 @@ if __name__ == "__main__":
   #  time.sleep(5)
 
   #  otter.set_thrusters(0.3, 1)
-    otter.controller_inputs_torque(150, 0)
-
-
-
-
-
-
-
-
-
+    intasd = input("Enter to start the test: ")
+    otter.set_manual_control_mode(0.18, 0.0, 0.0)
+    time.sleep(2)
+    otter.set_manual_control_mode(0.18, 0.0, 0.0)
+    time.sleep(2)
+    otter.set_manual_control_mode(0.18, 0.0, 0.0)
+    time.sleep(1)
+    print("!!!   GO   !!!")
+    otter.set_manual_control_mode(1.0, 0.0, 0.0)
+    curtime = time.time()
+    time.sleep(2)
+    otter.set_manual_control_mode(1.0, 0.0, 0.0)
+    asdasd = input("Press to exit")
+    finaltime = time.time() - curtime
+    print(f"Final time is {finaltime}")
