@@ -32,6 +32,8 @@ class live_guidance():
         self.referance_point = [0, 0, 0]
         self.target = [0, 0]
         self.otter_ned_pos = [0, 0]
+        self.total_distance_to_target = 0.0
+        self.counter = 0
 
 
 
@@ -91,6 +93,10 @@ class live_guidance():
 
 
                 elapsed_time = time.time() - start_time
+
+                self.counter = self.counter + 1
+                self.total_distance_to_target = self.total_distance_to_target + self.distance_to_target
+
                 if elapsed_time < self.cycletime:
                     time.sleep(self.cycletime - elapsed_time)
 
@@ -162,6 +168,10 @@ class live_guidance():
 
 
                 elapsed_time = time.time() - start_time
+
+                self.counter = self.counter + 1
+                self.total_distance_to_target = self.total_distance_to_target + self.distance_to_target
+
                 if elapsed_time < self.cycletime:
                     time.sleep(self.cycletime - elapsed_time)
 
@@ -215,6 +225,8 @@ class live_guidance():
     def save_log(self):
         print("Tracking disabled. Otter is now in drift mode")
         self.otter.drift()
+
+        print(f"AVG distance to target: {self.total_distance_to_target/self.counter}")
 
         logs_dir = '../logs'
         if not os.path.exists(logs_dir):
