@@ -244,6 +244,7 @@ class otter_simulator():
                 east_distance = self.moving_target[1] - eta[1]
 
                 self.distance_to_target = math.sqrt(north_distance**2 + east_distance**2)
+                dist_tot = dist_tot + self.distance_to_target
 
                 if self.distance_to_target <= self.surge_setpoint:
                     north_distance = 0
@@ -282,7 +283,7 @@ class otter_simulator():
                     theta = omega * asd
                     self.moving_target[0] = -15 + 20 * np.cos(theta)
                     self.moving_target[1] = 0 + 20 * np.sin(theta)
-                    dist_tot = dist_tot + self.distance_to_target
+
 
 
 

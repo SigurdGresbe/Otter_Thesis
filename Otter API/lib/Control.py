@@ -312,9 +312,9 @@ class otter_control():
         return np.array(rpm_left), np.array(rpm_right), force_x.ravel(), force_z.ravel()
 
     # Interpolates throttle values in 2D using the throttle map. Adjust k value for how many "neighboring" values to look at for interpolation
-    def interpolate_force_values(self, rpm_left, rpm_right, k=3):
-        rpm_left = (rpm_left * 60) / (2 * math.pi)
-        rpm_right = (rpm_right * 60) / (2 * math.pi)
+    def interpolate_force_values(self, rads_left, rads_right, k=3):
+        rpm_left = (rads_left * 60) / (2 * math.pi)
+        rpm_right = (rads_right * 60) / (2 * math.pi)
 
 
 

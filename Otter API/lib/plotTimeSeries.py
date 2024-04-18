@@ -154,9 +154,10 @@ def plotControls(simTime, simData, vehicle, figNo):
         plt.plot(t, u_control, t, u_actual)
         plt.legend(
             [vehicle.controls[i] + ", command", vehicle.controls[i] + ", actual"],
-            fontsize=legendSize,
+            fontsize=14,
         )
-        plt.xlabel("Time (s)", fontsize=12)
+        plt.xlabel("Time (s)", fontsize=14)
+        plt.tick_params(axis='both', which='major', labelsize=14)
         plt.grid()
 
 
@@ -242,6 +243,26 @@ def plotPosTar(simTime, simData, figNo, targetData):
     plt.grid()
 
     plt.plot(y, x, tar_x, tar_y, "--")
-    plt.legend(["North-East positions (m)", "Target position (m)"], fontsize=legendSize)
+    plt.legend(["North-East positions (m)", "Target position (m)"], fontsize=14)
+    plt.tick_params(axis='both', which='major', labelsize=14)
     plt.grid()
 
+
+def plotSpeed(simTime, simData, figNo):
+    x = simTime
+
+    u = simData[:, 6]
+    v = simData[:, 7]
+    w = simData[:, 8]
+
+    U = np.sqrt(np.multiply(u, u) + np.multiply(v, v) + np.multiply(w, w))
+
+    plt.figure(
+        figNo, figsize=(cm2inch(figSize1[0]), cm2inch(figSize1[1])), dpi=dpiValue
+    )
+    plt.grid()
+
+    plt.plot(x, U)
+    plt.legend(["Speed (m/s)"], fontsize=14)
+    plt.tick_params(axis='both', which='major', labelsize=14)
+    plt.grid()

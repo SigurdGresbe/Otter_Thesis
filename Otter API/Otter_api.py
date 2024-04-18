@@ -158,7 +158,7 @@ class otter():
             n2 = 0.1
 
         if self.tau_N_neg:
-            self.sorted_values["n1"] = (n2*60) /(2*math.pi)
+            self.sorted_values["n1"] = (n2*60) /(2*math.pi)                                 # Stores n1 and n2 as rpm for easier plotting
             self.sorted_values["n2"] = (n1*60) /(2*math.pi)
         else:
             self.sorted_values["n1"] = (n1*60) /(2*math.pi)
@@ -174,8 +174,7 @@ class otter():
         #return self.set_thrusters(throttle_left, throttle_right)                                            #  For interpolating 1D throttle map
 
 
-
-        torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n1, n2, 3)
+        torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n1, n2, 3)                  # Speed is in rads
 
         if torque_z < 0.05:
             torque_z = 0.0
@@ -184,12 +183,28 @@ class otter():
             torque_z = torque_z * -1
 
         # Uncomment this if running on linux. Scipy 2D interpolate has some bugs on linux........
-        if "distance_to_target" in self.sorted_values:
-            if self.sorted_values["distance_to_target"] < surge_setpoint:
-                torque_x = 0
-                torque_z = 0
+        #if "distance_to_target" in self.sorted_values:
+            #if self.sorted_values["distance_to_target"] < surge_setpoint:
+                #torque_x = 0
+                #torque_z = 0
 
+            #return self.set_manual_control_mode(torque_x, 0.0, torque_z)
+
+        return self.set_manual_control_mode(torque_x, 0.0, torque_z)
+
+
+
+    # Takes input in radS for each propeller and sends the command to the Otter
+    def controller_inputs_radS(self, n1, n2):
+        if n1 < n2:
+            torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n2, n1, 3)          # Inverts the yaw direciton because of the interpolation map
+            return self.set_manual_control_mode(torque_x, 0.0, torque_z * -1)
+        else:
+            torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n1, n2, 3)
             return self.set_manual_control_mode(torque_x, 0.0, torque_z)
+
+
+
 
 
 
@@ -201,29 +216,10 @@ if __name__ == "__main__":
 
 
     # Establishes a socket connection to the Otter with IP and the PORT'
-    otter.establish_connection("10.0.5.1", 2009)
+    otter.establish_connection("localhost", 2009)
 
 
     # Write test commands under here:
 
-  #  otter.set_manual_control_mode(1, 0, 0)
-  #  otter.update_values()
+    otter.controller_inputs_radS(25, 50)
 
-  #  time.sleep(5)
-
-  #  otter.set_thrusters(0.3, 1)
-    intasd = input("Enter to start the test: ")
-    otter.set_manual_control_mode(0.18, 0.0, 0.0)
-    time.sleep(2)
-    otter.set_manual_control_mode(0.18, 0.0, 0.0)
-    time.sleep(2)
-    otter.set_manual_control_mode(0.18, 0.0, 0.0)
-    time.sleep(1)
-    print("!!!   GO   !!!")
-    otter.set_manual_control_mode(1.0, 0.0, 0.0)
-    curtime = time.time()
-    time.sleep(2)
-    otter.set_manual_control_mode(1.0, 0.0, 0.0)
-    asdasd = input("Press to exit")
-    finaltime = time.time() - curtime
-    print(f"Final time is {finaltime}")

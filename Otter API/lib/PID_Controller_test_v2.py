@@ -60,8 +60,8 @@ class PIDController:
         error = (setpoint - measured_value + math.pi) % (2 * math.pi) - math.pi
 
         #if ((distance_to_target - (surge_radius + 2)) < 0):
-         #   self.integral = 0                                           # Resets the integral when the target is reached. Probably is a better method than this.
-          #  error = 0
+            #self.integral = 0                                           # Resets the integral when the target is reached. Probably is a better method than this.
+            #error = 0
 
         if error < 0.017 and error > -0.017:
             self.integral = 0                                            # Resets the integral when the target is reached. Probably is a better method than this.
