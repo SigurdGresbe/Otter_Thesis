@@ -36,7 +36,7 @@ class otter_connector():
     def __init__(self):
 
         # This enables the printing of messages. Used for debugging. Slows down the software a bit.
-        self.verbose = True
+        self.verbose = False
 
 
 
@@ -136,8 +136,9 @@ class otter_connector():
     def update_values(self, timeout = 10):
         msg = self.read_message(timeout)
         if msg is None:
-            print("No message received from Otter")
-            print("Check communication")
+            if self.verbose:
+                print("No message received from Otter")
+                print("Check communication")
             return
         list = msg.split()
 
