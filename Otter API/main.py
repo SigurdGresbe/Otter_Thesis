@@ -15,7 +15,7 @@ from numba import jit, cuda
 ##########################################################################################################################################################
 
 
-N = 51000                                                                                               # Number of simulation samples
+N = 65000                                                                                               # Number of simulation samples
 sampleTime = 0.02                                                                                       # Simulation time per sample. Usually at 0.02, other values could cause instabillity in the simulation
 use_target_coordinates = False                                                                          # To use coordinates as a target or to use a linear path
 use_moving_target = True                                                                                # To use moving target instead of target list (path following)
@@ -23,10 +23,10 @@ target_list = [[0, 10000]]                                                      
 end_when_last_target_reached = False                                                                    # Ends the simulation when the final target is reached
 moving_target_start = [5, 0]                                                                        # Start point of the moving target if use_moving_target is set to True
 moving_target_increase = [0.4, 0.8]                                                                    # Movement of the moving target each second
-target_radius = 2                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
+target_radius = 1                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
 store_force_file = False                                                                                # Store the simulated control forces in a .csv file
-circular_target = True                                                                                  # Make the moving target a circle in the simulation
+circular_target = False                                                                                  # Make the moving target a circle in the simulation
 
 
 # When connecting to live otter and using target tracking:
@@ -41,7 +41,7 @@ v_circle = 2                                                                    
 enable_live_plot = True                                                                                  # Enables live plotting
 
 
-parameter_list = 3                                     # Tuning parameters, 1 for trial and error, 2 for pole placement wb = 0.5, and 3 for pole placement wb = 0.4
+parameter_list = 2                                     # Tuning parameters, 1 for trial and error, 2 for pole placement wb = 0.5, and 3 for pole placement wb = 0.4
 
 
 trial_and_error_parameters = {"surge_kp" : 12, "surge_ki" : 0.7, "surge_kd" : 0, "yaw_kp" : 37, "yaw_ki" : 4, "yaw_kd" : 8}
@@ -133,7 +133,7 @@ def main(option):
     if option == 1:
         [simTime, simData, targetData] = simulator.simulate(N, sampleTime, otter, surge_PID, yaw_PID)   # This runs the whole simulation
 
-        #plotVehicleStates(simTime, simData, 1)                                                          #
+        plotVehicleStates(simTime, simData, 1)                                                          #
         plotControls(simTime, simData, otter, 2)                                                        #
         plot3D(simData, numDataPoints, FPS, filename, 3)                                                #
         plotPosTar(simTime, simData, 4, targetData)                                                     # Plotting

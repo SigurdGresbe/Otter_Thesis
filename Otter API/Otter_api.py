@@ -13,7 +13,7 @@ class otter():
 
     def __init__(self):
 
-        self.verbose = True
+        self.verbose = False
 
         # Creates instances of the connector and control classes
         self.otter_connector = Connector.otter_connector()
@@ -34,6 +34,7 @@ class otter():
 
         self.tau_N_neg = False
 
+        self.sorted_values["current_time"] = time.time()
 
 
     # Tries to establish connection to the otter. Default values are in place for testing on a local machine with a test server. Returns boolean
@@ -85,7 +86,7 @@ class otter():
         self.sorted_values["previous_lon"] = self.values["previous_position"][1]
         self.sorted_values["previous_height"] = self.values["previous_position"][2]
         self.sorted_values["last_speed_update"] = self.values["last_speed_update"]
-        self.sorted_values["current_course_over_ground"] = self.values["current_course_over_ground"]
+        self.sorted_values["current_course_over_ground"] = self.values["current_course_over_ground"]        #DEG, 0 deg is north.
         self.sorted_values["current_speed"] = self.values["current_speed"]
         self.sorted_values["current_fuel_capacity"] = self.values["current_fuel_capacity"]
         self.sorted_values["current_orientation_1"] = self.values["current_orientation"][0]
@@ -104,12 +105,35 @@ class otter():
         self.sorted_values["east_from_observer"] = self.values["geo2ned_from_observer"][1]
         self.sorted_values["down_from_observer"] = self.values["geo2ned_from_observer"][2]
 
+        self.sorted_values["previous_time"] = self.sorted_values["current_time"]
+        self.sorted_values["current_time"] = time.time()
+        self.sorted_values["cycle_time"] = self.sorted_values["current_time"] - self.sorted_values["previous_time"]
+
+        prev_pos_ned = pm.geodetic2ned(self.sorted_values["previous_lat"], self.sorted_values["previous_lon"], self.sorted_values["previous_height"], self.sorted_values["observer_lat"], self.sorted_values["observer_lon"], self.sorted_values["observer_height"])
+        cur_pos_ned = pm.geodetic2ned(self.sorted_values["lat"], self.sorted_values["lon"], self.sorted_values["height"], self.sorted_values["observer_lat"], self.sorted_values["observer_lon"], self.sorted_values["observer_height"])
+
+        diff_n = cur_pos_ned[0] - prev_pos_ned[0]
+        diff_e = cur_pos_ned[1] - prev_pos_ned[1]
+
+
+
+        self.sorted_values["speed_n"] = diff_n / self.sorted_values["cycle_time"]
+        self.sorted_values["speed_e"] = diff_e / self.sorted_values["cycle_time"]
+
+        self.sorted_values["speed_surge"] = self.sorted_values["speed_n"] * math.cos(self.sorted_values["current_course_over_ground"] * (math.pi/180))
+        self.sorted_values["speed_sway"] = self.sorted_values["speed_n"] * -math.sin(self.sorted_values["current_course_over_ground"] * (math.pi/180))
+
+
         return self.values
+
+
+
 
     # Takes the otter coordinates and converts it to north east down observed from the observer coordinates
     def geo2ned_position(self):
         n, e, d = pm.geodetic2ned(self.sorted_values["lat"], self.sorted_values["lon"], self.sorted_values["height"], self.sorted_values["observer_lat"], self.sorted_values["observer_lon"], self.sorted_values["observer_height"])
         self.geo2ned_from_observer = [n, e, d]
+
 
     # Tries to set the Otter in manual control mode, controlling the x, y and torques. force_y is not in use.
     def set_manual_control_mode(self, force_x, force_y, torque_z):
@@ -120,9 +144,11 @@ class otter():
             "No connection to Otter"
             return False
 
+
     # Takes inputs tau_X and tau_N (N) and returns the control speeds n1 and n2 (rad/s)
     def controlAllocation(self, tau_X, tau_N):
         return self.otter_control.controlAllocation(tau_X, tau_N)
+
 
     # Tries to make the Otter enter drift mode. Returns boolean
     def drift(self):
@@ -193,7 +219,6 @@ class otter():
         return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
 
-
     # Takes input in radS for each propeller and sends the command to the Otter
     def controller_inputs_radS(self, n1, n2):
         if n1 < n2:
@@ -204,6 +229,32 @@ class otter():
             return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
 
+    def testrun(self):
+        self.values["current_position"] = [0.0, 0.0, 0.0]
+        self.values["current_course_over_ground"] = 45
+        cur_time = time.time()
+        cycle_time = 0.1
+        counter = 0
+
+        self.observer_coordinates = [0.0, 0.0, 0.0]
+
+        while True:
+
+            start_time = time.time()
+            self.values["previous_position"] = self.values["current_position"].copy()
+
+            self.values["current_position"][0] = self.values["current_position"][0] + (1/100000)*cycle_time
+            self.update_values()
+
+            if counter % 10 == 0:
+                print(self.sorted_values["speed_surge"])
+                print(self.sorted_values["speed_sway"])
+
+            counter = counter + 1
+
+
+            if (time.time() - start_time) < cycle_time:
+                time.sleep(cycle_time)
 
 
 
@@ -221,5 +272,5 @@ if __name__ == "__main__":
 
     # Write test commands under here:
 
-    otter.controller_inputs_radS(25, 50)
+
 
