@@ -36,7 +36,7 @@ class otter_connector():
     def __init__(self):
 
         # This enables the printing of messages. Used for debugging. Slows down the software a bit.
-        self.verbose = False
+        self.verbose = True
 
 
 

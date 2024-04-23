@@ -16,7 +16,7 @@ class otter_control():
 
 
         # This enables the printing of messages. Used for debugging. Slows down the software a bit.
-        self.verbose = False
+        self.verbose = True
 
         # Scaling values for the engines
         self.scale_x_pos = 0.42

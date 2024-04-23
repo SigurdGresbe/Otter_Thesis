@@ -7,7 +7,7 @@ from lib.plotTimeSeries import *
 import threading
 import atexit
 import time
-from numba import jit, cuda
+
 
 
 ##########################################################################################################################################################
@@ -21,7 +21,7 @@ use_target_coordinates = False                                                  
 use_moving_target = True                                                                                # To use moving target instead of target list (path following)
 target_list = [[0, 10000]]                                                                           # List of targets to use if use_target_coordinates is set to True
 end_when_last_target_reached = False                                                                    # Ends the simulation when the final target is reached
-moving_target_start = [5, 0]                                                                        # Start point of the moving target if use_moving_target is set to True
+moving_target_start = [-50, 0]                                                                        # Start point of the moving target if use_moving_target is set to True
 moving_target_increase = [0.4, 0.8]                                                                    # Movement of the moving target each second
 target_radius = 1                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
@@ -30,18 +30,20 @@ circular_target = False                                                         
 
 
 # When connecting to live otter and using target tracking:
-ip = "localhost"
+ip = "10.0.5.1"
 port = 2009
-start_north = 0                                                                                          # Target north position from referance point
-start_east = 0                                                                                          # Target east position from referance point
+start_north = 50                                                                                          # Target north position from referance point
+start_east = 50                                                                                          # Target east position from referance point
 v_north = 0                                                                                             # Moving target speed north (m/s)
-v_east = 0                                                                                              # Moving target speed east (m/s)
-radius = 20                                                                                                # If tracking a circular motion
-v_circle = 2                                                                                            # Angular velocity (m/s)
+v_east = -1.5                                                                                              # Moving target speed east (m/s)
+radius = 40                                                                                                # If tracking a circular motion
+v_circle = 1.2                                                                                            # Angular velocity (m/s)
+side_length = 50                                                                                           # Square tracking side length
+side_target_speed = 1                                                                                      # Speed of square target
 enable_live_plot = True                                                                                  # Enables live plotting
 
 
-parameter_list = 2                                     # Tuning parameters, 1 for trial and error, 2 for pole placement wb = 0.5, and 3 for pole placement wb = 0.4
+parameter_list = 3                                     # Tuning parameters, 1 for trial and error, 2 for pole placement wb = 0.5, and 3 for pole placement wb = 0.4
 
 
 trial_and_error_parameters = {"surge_kp" : 12, "surge_ki" : 0.7, "surge_kd" : 0, "yaw_kp" : 37, "yaw_ki" : 4, "yaw_kd" : 8}
@@ -122,6 +124,9 @@ def _target_tracking():
 def _circular_tracking():
     live_guidance.circular_tracking(start_north, start_east, radius, v_circle)
 
+def _square_tracking():
+    live_guidance.square_tracking(start_north, start_east, side_length, side_target_speed)
+
 def exit_handler():
     live_guidance.save_log()
 
@@ -151,9 +156,11 @@ def main(option):
         _target_thread.daemon = True
         _circle_thread = threading.Thread(target=_circular_tracking, args=())
         _circle_thread.daemon = True
+        _square_thread = threading.Thread(target=_square_tracking, args=())
+        _square_thread.daemon = True
 
 
-        option = float(input("Enter 1 for target tracking with moving target or 2 for circular motion: "))
+        option = float(input("Enter 1 for target tracking with moving target, 2 for circular motion or 3 for square tracking: "))
 
 
         if option == 1:
@@ -176,6 +183,17 @@ def main(option):
                 atexit.register(exit_handler)
             else:
                 live_guidance.circular_tracking(start_north, start_east, radius, v_circle)
+                atexit.register(exit_handler)
+
+        elif option == 3:
+            if enable_live_plot:
+                _square_thread.start()
+                print(" Waiting for data")
+                time.sleep(6)
+                p1 = Live_plotter.live_plotter(otter)
+                atexit.register(exit_handler)
+            else:
+                live_guidance.square_tracking(start_north, start_east, radius, v_circle)
                 atexit.register(exit_handler)
         else:
             print("Error")

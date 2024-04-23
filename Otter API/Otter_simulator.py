@@ -42,6 +42,10 @@ class otter_simulator():
         self.throttledf = self.throttledf.dropna(axis=0, how='all')
 
 
+        self.n1neg = False
+        self.n2neg = False
+
+
 
         ##################################################################################################################################################################################################################
         #        # Below is everything for the simulation of the dynamics of the Otter! This is mostly from "python_vehicle_simulator" authored by Thor I. Fossen.                                                       #
@@ -326,15 +330,29 @@ class otter_simulator():
 
 
             if n1 < 0:                                                                                          #
-                n1 = 0.1                                                                                        #
+                #n1 = 0.1                                                                                        #
+
+                self.n1neg = True
+                n1 = n1 * -1
+
             if n2 < 0:                                                                                          # Makes the thursters unable to go in reverse
-                n2 = 0.1                                                                                        #
+                #n2 = 0.1                                                                                        #
+
+                self.n2neg = True
+                n2 = n2 * -1
 
            # otter_torques, speed = otter.otter_control.find_closest(f"{n1};{n2}")                              #
            # n1, n2 = map(float, speed.strip("()").split(';'))                                                  #   2D throttle map, no interpolation
 
 
             torque_z, torque_x, speed = otter.otter_control.interpolate_force_values(n1, n2, 3)                 #   2D interpolation
+
+            if self.n1neg:
+                n1 = n1 * -1
+                self.n1neg = False
+            if self.n2neg:
+                n2 = n2 * -1
+                self.n2neg = False
 
             # Uncomment to use interpolated RPM's in simulator
             #n1 = speed[0]                                                                                       #
@@ -346,7 +364,6 @@ class otter_simulator():
             else:
                 n1_calc = n1
                 n2_calc = n2
-
 
 
 

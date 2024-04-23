@@ -38,7 +38,7 @@ class live_guidance():
 
 
 
-    def target_tracking(self, start_north, start_east, v_north, v_east,):
+    def target_tracking(self, start_north, start_east, v_north, v_east):
         self.otter.establish_connection(self.ip, self.port)
         self.otter.update_values()
 
@@ -191,6 +191,99 @@ class live_guidance():
 
             time.sleep(10)
 
+    def square_tracking(self, start_north, start_east, side_length, target_speed):
+        self.otter.establish_connection(self.ip, self.port)
+        self.otter.update_values()
+
+
+        self.referance_point = [self.otter.sorted_values["lat"], self.otter.sorted_values["lon"], 0.0]
+        self.otter.observer_coordinates = self.referance_point
+        self.target_ne_pos = [start_north, start_east]
+
+        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
+        self.log = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
+
+
+        self.otter.controller_inputs_torque(10, 0)
+        time.sleep(2)
+        self.otter.controller_inputs_torque(10, 0)
+        time.sleep(1)
+
+        curdir = "we"
+
+        print(f"Starting tracking. North error is {start_north}m and east error is {start_east}m")
+        try:
+            while True:
+                start_time = time.time()
+
+                tau_X, tau_N = self.calculate_forces()
+                self.otter.controller_inputs_torque(tau_X, tau_N, self.surge_setpoint)
+
+                self.otter.sorted_values["north_error"] = self.north_error
+                self.otter.sorted_values["east_error"] = self.east_error
+                self.otter.sorted_values["distance_to_target"] = self.distance_to_target
+                self.otter.sorted_values["yaw_setpoint"] = self.yaw_setpoint
+                self.otter.sorted_values["current_angle"] = self.current_angle
+
+                self.otter.sorted_values["tau_X"] = tau_X
+                self.otter.sorted_values["tau_N"] = tau_N
+
+                if self.cycletime*target_speed*self.counter % side_length == 0:
+                    if curdir == "ns":
+                        curdir = "ew"
+                    elif curdir == "ew":
+                        curdir = "sn"
+                    elif curdir == "sn":
+                        curdir = "we"
+                    elif curdir == "we":
+                        curdir = "ns"
+
+                if curdir == "ns":
+                    self.target_ne_pos = [self.target_ne_pos[0] - (target_speed/(1/self.cycletime)), self.target_ne_pos[1]]
+                elif curdir == "ew":
+                    self.target_ne_pos = [self.target_ne_pos[0], self.target_ne_pos[1] - (target_speed/(1/self.cycletime))]
+                elif curdir == "sn":
+                    self.target_ne_pos = [self.target_ne_pos[0] + (target_speed/(1/self.cycletime)), self.target_ne_pos[1]]
+                elif curdir == "we":
+                    self.target_ne_pos = [self.target_ne_pos[0], self.target_ne_pos[1] + (target_speed / (1 / self.cycletime))]
+
+
+                self.otter.sorted_values["target_north_from_observer"] = self.target_ne_pos[0]
+                self.otter.sorted_values["target_east_from_observer"] = self.target_ne_pos[1]
+
+                current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
+                temp_df = pd.DataFrame([self.otter.sorted_values], index=[current_datetime])
+
+                # This makes sure there is no duplicates of datetimes in the log
+                if current_datetime in self.log.index:
+                    self.log.loc[current_datetime] = temp_df.loc[current_datetime]
+                else:
+                    self.log = pd.concat([self.log, temp_df])
+
+
+
+                elapsed_time = time.time() - start_time
+
+                self.counter = self.counter + 1
+                self.total_distance_to_target = self.total_distance_to_target + self.distance_to_target
+
+                if elapsed_time < self.cycletime:
+                    time.sleep(self.cycletime - elapsed_time)
+
+
+        except KeyboardInterrupt:
+            print("Tracking disabled. Otter is now in drift mode")
+            self.otter.drift()
+
+            logs_dir = '../logs'
+            if not os.path.exists(logs_dir):
+                os.makedirs(logs_dir)
+
+            filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '.csv'
+            file_path = os.path.join(logs_dir, filename)
+            self.log.to_csv(file_path, sep=';')
+
+            time.sleep(10)
 
     def calculate_forces(self):
 
@@ -225,13 +318,12 @@ class live_guidance():
     def save_log(self):
         print("Tracking disabled. Otter is now in drift mode")
         self.otter.drift()
-
-        print(f"AVG distance to target: {self.total_distance_to_target/self.counter}")
-
-        logs_dir = '../logs'
+        logs_dir = './logs'
         if not os.path.exists(logs_dir):
             os.makedirs(logs_dir)
-
         filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '.csv'
         file_path = os.path.join(logs_dir, filename)
-        self.log.to_csv(file_path, sep=';')
+        try:
+            self.log.to_csv(file_path, sep=';')
+        except Exception as e:
+            print(f"Error when trying to save the log: {e}")

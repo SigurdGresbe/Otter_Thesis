@@ -113,9 +113,8 @@ class live_plotter():
         else:
             self.xs31.append(float(self.otter.sorted_values[self.x31]))
             self.xs32.append(float(self.otter.sorted_values[self.x32]))
-        self.ys31.append(float(self.otter.sorted_values[self.y31] * (180/math.pi)))
+        self.ys31.append(float(self.otter.sorted_values[self.y31]))
         self.ys32.append(float(self.otter.sorted_values[self.y32] * (180/math.pi)))
-
         self.ax3.clear()
         self.ax3.set_xlabel("Time (s)")
         self.ax3.set_ylabel("Angle (deg)")

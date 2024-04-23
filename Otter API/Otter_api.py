@@ -13,7 +13,7 @@ class otter():
 
     def __init__(self):
 
-        self.verbose = False
+        self.verbose = True
 
         # Creates instances of the connector and control classes
         self.otter_connector = Connector.otter_connector()
@@ -169,13 +169,24 @@ class otter():
     # and turns the engines the desired speeds.
     def controller_inputs_torque(self, tau_X, tau_N, surge_setpoint=3):
 
+
         # Inverses the yaw if it is negative because of the throttle map
-        if tau_N < 0:
+        if tau_N < 0 and tau_X >= 0:
             n1, n2 = self.controlAllocation(tau_X, tau_N*-1)
             self.tau_N_neg = True
+            self.tau_X_neg = False
+        elif tau_N < 0 and tau_X < 0:
+            n1, n2 = self.controlAllocation(tau_X * -1, tau_N * -1)
+            self.tau_N_neg = True
+            self.tau_X_neg = True
+        elif tau_N >= 0 and tau_X < 0:
+            n1, n2 = self.controlAllocation(tau_X * -1, tau_N)
+            self.tau_N_neg = False
+            self.tau_X_neg = True
         else:
             n1, n2 = self.controlAllocation(tau_X, tau_N)
             self.tau_N_neg = False
+            self.tau_X_neg = False
 
         ##### Experimental #####
         if n1 < 0:  #
@@ -207,12 +218,14 @@ class otter():
 
         if self.tau_N_neg:
             torque_z = torque_z * -1
+        if self.tau_X_neg:
+            torque_x = torque_x * -1
 
         # Uncomment this if running on linux. Scipy 2D interpolate has some bugs on linux........
-        #if "distance_to_target" in self.sorted_values:
-            #if self.sorted_values["distance_to_target"] < surge_setpoint:
-                #torque_x = 0
-                #torque_z = 0
+        if "distance_to_target" in self.sorted_values:
+            if self.sorted_values["distance_to_target"] < surge_setpoint:
+                torque_x = 0
+                torque_z = 0
 
             #return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
