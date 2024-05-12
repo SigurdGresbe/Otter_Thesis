@@ -165,7 +165,7 @@ class otter():
 
     # Takes inputs from signals in the form of tau_X (surge) and tau_N (yaw) in N, converts it using control allocation
     # and turns the engines the desired speeds.
-    def controller_inputs_torque(self, tau_X, tau_N, on_linux=False, surge_setpoint=3):
+    def controller_inputs_torque(self, tau_X, tau_N, on_linux=False, surge_setpoint=1):
 
 
         # Inverses the yaw if it is negative because of the throttle map
@@ -233,7 +233,7 @@ class otter():
 
 
     # Takes input in radS for each propeller and sends the command to the Otter
-    def controller_inputs_radS(self, n1, n2, on_linux=False, surge_setpoint=3):
+    def controller_inputs_radS(self, n1, n2, on_linux=False, surge_setpoint=1):
         if n1 < n2:
             torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n2, n1, 3)          # Inverts the yaw direciton because of the interpolation map
 
