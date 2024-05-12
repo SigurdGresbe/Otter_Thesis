@@ -127,8 +127,6 @@ class otter():
         return self.values
 
 
-
-
     # Takes the otter coordinates and converts it to north east down observed from the observer coordinates
     def geo2ned_position(self):
         n, e, d = pm.geodetic2ned(self.sorted_values["lat"], self.sorted_values["lon"], self.sorted_values["height"], self.sorted_values["observer_lat"], self.sorted_values["observer_lon"], self.sorted_values["observer_height"])
@@ -167,7 +165,7 @@ class otter():
 
     # Takes inputs from signals in the form of tau_X (surge) and tau_N (yaw) in N, converts it using control allocation
     # and turns the engines the desired speeds.
-    def controller_inputs_torque(self, tau_X, tau_N, surge_setpoint=3):
+    def controller_inputs_torque(self, tau_X, tau_N, on_linux=False, surge_setpoint=3):
 
 
         # Inverses the yaw if it is negative because of the throttle map
@@ -221,24 +219,39 @@ class otter():
         if self.tau_X_neg:
             torque_x = torque_x * -1
 
-        # Uncomment this if running on linux. Scipy 2D interpolate has some bugs on linux........
-        if "distance_to_target" in self.sorted_values:
-            if self.sorted_values["distance_to_target"] < surge_setpoint:
-                torque_x = 0
-                torque_z = 0
 
-            #return self.set_manual_control_mode(torque_x, 0.0, torque_z)
+        #Scipy 2D interpolate has some bugs on linux........
+        if on_linux:
+            if "distance_to_target" in self.sorted_values:
+                if self.sorted_values["distance_to_target"] < surge_setpoint:
+                    torque_x = 0
+                    torque_z = 0
+
+                #return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
         return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
 
     # Takes input in radS for each propeller and sends the command to the Otter
-    def controller_inputs_radS(self, n1, n2):
+    def controller_inputs_radS(self, n1, n2, on_linux=False, surge_setpoint=3):
         if n1 < n2:
             torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n2, n1, 3)          # Inverts the yaw direciton because of the interpolation map
+
+            # Scipy 2D interpolate has some bugs on linux........
+            if on_linux:
+                if "distance_to_target" in self.sorted_values:
+                    if self.sorted_values["distance_to_target"] < surge_setpoint:
+                        torque_x = 0
+                        torque_z = 0
             return self.set_manual_control_mode(torque_x, 0.0, torque_z * -1)
         else:
             torque_z, torque_x, speed = self.otter_control.interpolate_force_values(n1, n2, 3)
+            # Scipy 2D interpolate has some bugs on linux........
+            if on_linux:
+                if "distance_to_target" in self.sorted_values:
+                    if self.sorted_values["distance_to_target"] < surge_setpoint:
+                        torque_x = 0
+                        torque_z = 0
             return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
 
