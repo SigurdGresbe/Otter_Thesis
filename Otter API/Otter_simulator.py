@@ -285,8 +285,8 @@ class otter_simulator():
                     omega = 1.5 / 50
                     asd = asd + sampleTime
                     theta = omega * asd
-                    self.moving_target[0] = -15 + 20 * np.cos(theta)
-                    self.moving_target[1] = 0 + 20 * np.sin(theta)
+                    self.moving_target[0] = -20 + 40 * np.cos(theta)
+                    self.moving_target[1] = -20 + 40 * np.sin(theta)
 
 
 

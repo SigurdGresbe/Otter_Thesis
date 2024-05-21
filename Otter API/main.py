@@ -15,14 +15,14 @@ import time
 ##########################################################################################################################################################
 
 
-N = 65000                                                                                               # Number of simulation samples
+N = 13333                                                                                               # Number of simulation samples
 sampleTime = 0.02                                                                                       # Simulation time per sample. Usually at 0.02, other values could cause instabillity in the simulation
 use_target_coordinates = False                                                                          # To use coordinates as a target or to use a linear path
 use_moving_target = True                                                                                # To use moving target instead of target list (path following)
 target_list = [[0, 10000]]                                                                           # List of targets to use if use_target_coordinates is set to True
 end_when_last_target_reached = False                                                                    # Ends the simulation when the final target is reached
-moving_target_start = [-50, 0]                                                                        # Start point of the moving target if use_moving_target is set to True
-moving_target_increase = [0.4, 0.8]                                                                    # Movement of the moving target each second
+moving_target_start = [0, -10]                                                                        # Start point of the moving target if use_moving_target is set to True
+moving_target_increase = [-1.5, 0.0]                                                                    # Movement of the moving target each second
 target_radius = 1                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
 store_force_file = False                                                                                # Store the simulated control forces in a .csv file
@@ -32,18 +32,18 @@ circular_target = False                                                         
 # When connecting to live otter and using target tracking:
 ip = "10.0.5.1"
 port = 2009
-start_north = 50                                                                                          # Target north position from referance point
-start_east = 50                                                                                          # Target east position from referance point
+start_north = -20                                                                                          # Target north position from referance point
+start_east = -20                                                                                          # Target east position from referance point
 v_north = 0                                                                                             # Moving target speed north (m/s)
 v_east = -1.5                                                                                              # Moving target speed east (m/s)
 radius = 40                                                                                                # If tracking a circular motion
-v_circle = 1.2                                                                                            # Angular velocity (m/s)
+v_circle = 1.5                                                                                            # Angular velocity (m/s)
 side_length = 50                                                                                           # Square tracking side length
 side_target_speed = 1                                                                                      # Speed of square target
 enable_live_plot = True                                                                                  # Enables live plotting
 
 
-parameter_list = 3                                     # Tuning parameters, 1 for trial and error, 2 for pole placement wb = 0.5, and 3 for pole placement wb = 0.4
+parameter_list = 3                                    # Tuning parameters, 1 for trial and error, 2 for pole placement wb = 0.5, and 3 for pole placement wb = 0.4
 
 
 trial_and_error_parameters = {"surge_kp" : 12, "surge_ki" : 0.7, "surge_kd" : 0, "yaw_kp" : 37, "yaw_ki" : 4, "yaw_kd" : 8}

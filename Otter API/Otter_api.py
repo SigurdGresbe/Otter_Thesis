@@ -36,31 +36,25 @@ class otter():
 
         self.sorted_values["current_time"] = time.time()
 
-
     # Tries to establish connection to the otter. Default values are in place for testing on a local machine with a test server. Returns boolean
     def establish_connection(self, ip, port):
         return self.otter_connector.establish_connection(ip, port)
-
 
     # Tries to close the socket connection to the Otter. Returns boolean
     def close_connection(self):
         return self.otter_connector.close_connection()
 
-
     # Checks the current connection status to the Otter. Returns boolean
     def check_connection(self):
         return self.otter_connector.check_connection()
-
 
     # Reads a message from the Otter and returns it and stores it in "last_message_recieved". Returns the last message recieved.
     def read_message(self):
         return self.otter_connector.read_message()
 
-
     # Sends a message to the Otter, with the option of adding checksum (defaults to False). Returns boolean
     def send_message(self, message, checksum_needed = False):
         return self.otter_connector.send_message(message, checksum_needed)
-
 
     # Tries to update all the values in the dictionary "values" with the current values from the Otter. Requires connection established. Returns updated dictionary "values"
     def update_values(self):
@@ -126,12 +120,10 @@ class otter():
 
         return self.values
 
-
     # Takes the otter coordinates and converts it to north east down observed from the observer coordinates
     def geo2ned_position(self):
         n, e, d = pm.geodetic2ned(self.sorted_values["lat"], self.sorted_values["lon"], self.sorted_values["height"], self.sorted_values["observer_lat"], self.sorted_values["observer_lon"], self.sorted_values["observer_height"])
         self.geo2ned_from_observer = [n, e, d]
-
 
     # Tries to set the Otter in manual control mode, controlling the x, y and torques. force_y is not in use.
     def set_manual_control_mode(self, force_x, force_y, torque_z):
@@ -142,11 +134,9 @@ class otter():
             "No connection to Otter"
             return False
 
-
     # Takes inputs tau_X and tau_N (N) and returns the control speeds n1 and n2 (rad/s)
     def controlAllocation(self, tau_X, tau_N):
         return self.otter_control.controlAllocation(tau_X, tau_N)
-
 
     # Tries to make the Otter enter drift mode. Returns boolean
     def drift(self):
@@ -157,11 +147,9 @@ class otter():
             "No connection to Otter"
             return False
 
-
     # Tries to set the trusters manually. a and b are individual thrusters and their values range from -1 to 1
     def set_thrusters(self, a, b):
         return self.otter_control.set_thrusters(a, b, self.otter_connector)
-
 
     # Takes inputs from signals in the form of tau_X (surge) and tau_N (yaw) in N, converts it using control allocation
     # and turns the engines the desired speeds.
@@ -231,7 +219,6 @@ class otter():
 
         return self.set_manual_control_mode(torque_x, 0.0, torque_z)
 
-
     # Takes input in radS for each propeller and sends the command to the Otter
     def controller_inputs_radS(self, n1, n2, on_linux=False, surge_setpoint=1):
         if n1 < n2:
@@ -253,7 +240,6 @@ class otter():
                         torque_x = 0
                         torque_z = 0
             return self.set_manual_control_mode(torque_x, 0.0, torque_z)
-
 
     def testrun(self):
         self.values["current_position"] = [0.0, 0.0, 0.0]

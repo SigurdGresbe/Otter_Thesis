@@ -63,7 +63,7 @@ class PIDController:
             #self.integral = 0                                           # Resets the integral when the target is reached. Probably is a better method than this.
             #error = 0
 
-        if error < 0.017 and error > -0.017:
+        if error < 0.017 and error > -0.017 and distance_to_target < 6:
             self.integral = 0                                            # Resets the integral when the target is reached. Probably is a better method than this.
             error = 0
 
