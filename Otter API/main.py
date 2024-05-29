@@ -26,10 +26,11 @@ moving_target_increase = [-1.5, 0.0]                                            
 target_radius = 1                                                                                       # Radius from center of target that counts as target reached, change this depending on the complete size of the run. Very low values causes instabillity
 verbose = True                                                                                          # Enable verbose printing
 store_force_file = False                                                                                # Store the simulated control forces in a .csv file
-circular_target = False                                                                                  # Make the moving target a circle in the simulation
+circular_target = True                                                                                  # Make the moving target a circle in the simulation
+animate_path = True                                                                                     # This takes a lot of time! File stored as 2D_animation.gif
 
 
-# When connecting to live otter and using target tracking:
+# When connecting to live otter and using target tracking or simulating circular target:
 ip = "10.0.5.1"
 port = 2009
 start_north = -20                                                                                          # Target north position from referance point
@@ -70,8 +71,8 @@ simulator = Otter_simulator.otter_simulator(target_list, use_target_coordinates,
 otter.controls = ["Left propeller shaft speed (rad/s)", "Right propeller shaft speed (rad/s)"]          # Some values needed for the plotting
 otter.dimU = len(otter.controls)                                                                        #
 
-numDataPoints = 50                                                                                      # number of 3D data points
-FPS = 10                                                                                                # frames per second (animated GIF)
+numDataPoints = 830                                                                                      # number of 3D data points
+FPS = 60                                                                                                # frames per second (animated GIF)
 filename = '3D_animation.gif'                                                                           # data file for animated GIF
 browser = 'chrome'                                                                                      # browser for visualization of animated GIF
 
@@ -140,9 +141,12 @@ def main(option):
 
         plotVehicleStates(simTime, simData, 1)                                                          #
         plotControls(simTime, simData, otter, 2)                                                        #
-        plot3D(simData, numDataPoints, FPS, filename, 3)                                                #
+                                                                                                        #
         plotPosTar(simTime, simData, 4, targetData)                                                     # Plotting
         plotSpeed(simTime, simData, 5)                                                                  #
+        if animate_path:
+            plot3D(simData, numDataPoints, FPS, filename, 3)
+            plot2D(simData, numDataPoints, FPS, "2D_animation.gif", 6, targetData)
         # Saves a GIF for 3d animation in the same folder as main
 
 
